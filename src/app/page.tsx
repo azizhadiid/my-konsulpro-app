@@ -1,7 +1,7 @@
 'use client'
 
+import Navbar from "@/components/Navabr";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -17,21 +17,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white">
       {/* Navbar */}
-      <header className="sticky top-0 bg-white shadow z-50">
-        <div className="max-w-7xl mx-auto flex justify-between items-center py-4 px-6">
-          <h1 className="text-xl font-bold text-blue-600">KonsulPro</h1>
-          <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
-            <Link href="/">Home</Link>
-            <Link href="/auth/login">Login</Link>
-            <Link href="/auth/register">Register</Link>
-            <Link href="#about">About</Link>
-            <Link href="#contact">Contact</Link>
-          </nav>
-          <button className="md:hidden text-2xl">
-            <i className="bi bi-list"></i>
-          </button>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="bg-gray-100 py-16">
@@ -128,6 +114,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+
     </main>
   );
 }

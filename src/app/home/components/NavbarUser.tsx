@@ -3,9 +3,40 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Swal from 'sweetalert2';
+import { useRouter } from 'next/navigation'; // untuk navigasi
+
 
 const NavbarUser = () => {
     const [isOpen, setIsOpen] = useState(false);
+
+    const router = useRouter();
+
+    const handleLogout = () => {
+        Swal.fire({
+            title: 'Apakah Anda yakin ingin logout?',
+            text: 'Anda akan keluar dari akun Anda.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, logout',
+            cancelButtonText: 'Batal',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.removeItem('token'); // hapus token
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil logout',
+                    showConfirmButton: false,
+                    timer: 1500,
+                }).then(() => {
+                    router.push('/auth/login'); // redirect setelah alert
+                });
+            }
+        });
+    };
+
 
     return (
         <nav className="sticky top-0 shadow z-50 bg-white border-gray-200 py-2.5 dark:bg-gray-900">
@@ -24,12 +55,13 @@ const NavbarUser = () => {
                 </a>
 
                 <div className="flex items-center lg:order-2">
-                    <Link
-                        href="/auth/login"
+                    <button
+                        onClick={handleLogout}
                         className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 sm:mr-2 lg:mr-0 focus:outline-none"
                     >
                         Logout
-                    </Link>
+                    </button>
+
                     <button
                         type="button"
                         onClick={() => setIsOpen(!isOpen)}
@@ -69,7 +101,7 @@ const NavbarUser = () => {
                         <li>
                             <a
                                 href="/home"
-                                className="block py-2 pl-3 pr-4 text-white bg-green-700 rounded lg:bg-transparent lg:text-green-700 lg:p-0 dark:text-white"
+                                className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded lg:bg-transparent lg:text-blue-700 lg:p-0 dark:text-white"
                                 aria-current="page"
                             >
                                 Beranda
@@ -78,7 +110,7 @@ const NavbarUser = () => {
                         <li>
                             <a
                                 href="#"
-                                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-green-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
+                                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
                             >
                                 Perusahaan
                             </a>
@@ -86,7 +118,7 @@ const NavbarUser = () => {
                         <li>
                             <a
                                 href="#"
-                                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-green-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
+                                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
                             >
                                 Konsultasi
                             </a>
@@ -94,7 +126,7 @@ const NavbarUser = () => {
                         <li>
                             <a
                                 href="/account"
-                                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-green-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
+                                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
                             >
                                 Akun
                             </a>
@@ -102,7 +134,7 @@ const NavbarUser = () => {
                         <li>
                             <a
                                 href="#"
-                                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-green-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
+                                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
                             >
                                 Riwayat
                             </a>
@@ -110,7 +142,7 @@ const NavbarUser = () => {
                         <li>
                             <a
                                 href="#"
-                                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-green-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
+                                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
                             >
                                 Kontak
                             </a>

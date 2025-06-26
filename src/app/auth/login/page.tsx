@@ -26,8 +26,12 @@ const Login = () => {
                 password,
             });
 
-            const { user } = response.data;
+            const { user, token } = response.data;
             toast.success('Login berhasil!');
+
+            // Simpan token
+            localStorage.setItem("token", token);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
 
             setTimeout(() => {
                 if (user.role === 'admin') {

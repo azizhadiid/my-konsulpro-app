@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import NavbarUser from "./components/NavbarUser";
+import MainTemplateUser from "@/components/MainTemplateUser";
 
 export default function Home() {
     const [message, setMessage] = useState('Loading...')
@@ -15,10 +15,7 @@ export default function Home() {
     }, [])
 
     return (
-        <main className="min-h-screen bg-white">
-            {/* Navbar */}
-            <NavbarUser />
-
+        <MainTemplateUser>
             {/* Hero Section */}
             <section className="bg-gray-100 py-16">
                 <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
@@ -114,8 +111,6 @@ export default function Home() {
                     </div>
                 </div>
             </section>
-
-
-        </main>
+        </MainTemplateUser>
     );
 }

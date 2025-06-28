@@ -7,7 +7,7 @@ interface MainTemplateUserProps {
 
 const MainTemplateUser = ({ children }: MainTemplateUserProps) => {
     return (
-        <main className="min-h-screen bg-white">
+        <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
             {/* Navbar */}
             <NavbarUser />
 

@@ -112,7 +112,7 @@ const AccountPage = () => {
 
     return (
         <MainTemplateUser>
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 pt-15 lg:pt-15 pb-20">
                 {/* Header with glassmorphism effect */}
                 <div className="relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 backdrop-blur-3xl"></div>

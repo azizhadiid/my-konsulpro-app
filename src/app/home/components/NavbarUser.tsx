@@ -55,7 +55,7 @@ const NavbarUser = () => {
         { name: 'Artikel', href: '#' },
         { name: 'Konsultasi', href: '/konsultasi' },
         { name: 'Riwayat', href: '#' },
-        { name: 'Kontak', href: '#' },
+        { name: 'Kontak', href: '/kontak' },
     ];
 
     return (

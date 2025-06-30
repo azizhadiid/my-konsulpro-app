@@ -1,8 +1,11 @@
+"use client"
+
 import { useState, useEffect } from "react";
-import { Menu, X, Home, FileText, MessageCircle, Clock, User, Phone, LogOut, ChevronDown } from "lucide-react";
+import Link from "next/link";
 import Image from "next/image";
 import Swal from 'sweetalert2';
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { ChevronDown, LogOut, User } from "lucide-react";
 
 const NavbarUser = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -10,6 +13,8 @@ const NavbarUser = () => {
     const [showProfileMenu, setShowProfileMenu] = useState(false);
 
     const router = useRouter();
+    const pathname = usePathname();
+
 
     // Handle scroll effect
     useEffect(() => {
@@ -46,24 +51,28 @@ const NavbarUser = () => {
     };
 
     const navItems = [
-        { name: 'Beranda', href: '/home', icon: Home, active: true },
-        { name: 'Artikel', href: '#', icon: FileText },
-        { name: 'Konsultasi', href: '#', icon: MessageCircle },
-        { name: 'Riwayat', href: '#', icon: Clock },
-        { name: 'Kontak', href: '#', icon: Phone },
+        { name: 'Beranda', href: '/home' },
+        { name: 'Artikel', href: '#' },
+        { name: 'Konsultasi', href: '/konsultasi' },
+        { name: 'Riwayat', href: '#' },
+        { name: 'Kontak', href: '#' },
     ];
 
     return (
-        <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled
-            ? 'bg-white/80 backdrop-blur-xl border-b border-gray-200/20 shadow-lg shadow-black/5'
-            : 'bg-white/90 backdrop-blur-sm border-b border-gray-100/50'
-            }`}>
+        <nav
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${scrolled
+                ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/20 dark:border-gray-700/20 shadow-lg shadow-gray-900/5'
+                : 'bg-white/60 dark:bg-gray-900/60 backdrop-blur-md'
+                }`}
+        >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-16">
-                    {/* Logo */}
-                    <div className="flex items-center space-x-3">
-                        <div className="relative group">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 flex items-center justify-center">
+                <div className="flex justify-between items-center h-16 lg:h-20">
+
+                    {/* Logo Section */}
+                    <div className="flex items-center space-x-3 group ">
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+                            <div className="relative bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-xl">
                                 <Image
                                     width={24}
                                     height={24}
@@ -72,48 +81,49 @@ const NavbarUser = () => {
                                     className="w-6 h-6 text-white"
                                 />
                             </div>
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                         </div>
-                        <div className="hidden sm:block">
-                            <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                        <div className="flex flex-col">
+                            <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                                 KonsulPro
-                            </h1>
-                            <p className="text-xs text-gray-500 font-medium">IT & Business Solutions</p>
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
+                                IT Solutions
+                            </span>
                         </div>
                     </div>
 
                     {/* Desktop Navigation */}
                     <div className="hidden lg:flex items-center space-x-1">
-                        {navItems.map((item) => {
-                            const Icon = item.icon;
+                        {navItems.map((item, index) => {
+                            const isActive = pathname === item.href;
+
                             return (
                                 <a
-                                    key={item.name}
+                                    key={index}
                                     href={item.href}
-                                    className={`group relative px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 flex items-center space-x-2 ${item.active
-                                        ? 'text-blue-600 bg-blue-50/80'
-                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50/80'
+                                    className={`relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ease-out hover:scale-[1.02] ${isActive
+                                        ? 'text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/25'
+                                        : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100/50 dark:hover:bg-gray-800/50'
                                         }`}
                                 >
-                                    <Icon className="w-4 h-4" />
-                                    <span>{item.name}</span>
-                                    {item.active && (
-                                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                                    {item.name}
+                                    {!isActive && (
+                                        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600/10 to-indigo-600/10 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                                     )}
                                 </a>
                             );
                         })}
                     </div>
 
-                    {/* Right Side - Profile & Logout */}
-                    <div className="hidden lg:flex items-center space-x-3">
+                    {/* CTA & Mobile Menu Button */}
+                    <div className="flex items-center space-x-3">
                         {/* Profile Dropdown */}
-                        <div className="relative">
+                        <div className="relative hidden lg:block">
                             <button
                                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                                 className="flex items-center space-x-2 px-3 py-2 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50/80 transition-all duration-300"
                             >
-                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                                     <User className="w-4 h-4 text-white" />
                                 </div>
                                 <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} />
@@ -137,44 +147,50 @@ const NavbarUser = () => {
                             )}
                         </div>
 
-                        {/* Quick Logout Button */}
+                        {/* Mobile Menu Button */}
                         <button
-                            onClick={handleLogout}
-                            className="group relative px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-medium text-sm shadow-lg hover:shadow-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 flex items-center space-x-2"
+                            type="button"
+                            onClick={() => setIsOpen(!isOpen)}
+                            className="lg:hidden relative p-2 rounded-xl text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/50 dark:hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
+                            aria-expanded={isOpen}
+                            aria-label="Toggle navigation menu"
                         >
-                            <LogOut className="w-4 h-4" />
-                            <span>Logout</span>
+                            <div className="relative w-6 h-6">
+                                <span className={`absolute block w-6 h-0.5 bg-current transform transition-all duration-300 ease-out ${isOpen ? 'rotate-45 top-3' : 'top-1'}`}></span>
+                                <span className={`absolute block w-6 h-0.5 bg-current transform transition-all duration-300 ease-out top-3 ${isOpen ? 'opacity-0' : 'opacity-100'}`}></span>
+                                <span className={`absolute block w-6 h-0.5 bg-current transform transition-all duration-300 ease-out ${isOpen ? '-rotate-45 top-3' : 'top-5'}`}></span>
+                            </div>
                         </button>
                     </div>
-
-                    {/* Mobile Menu Button */}
-                    <button
-                        onClick={() => setIsOpen(!isOpen)}
-                        className="lg:hidden p-2 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50/80 transition-all duration-300"
-                    >
-                        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                    </button>
                 </div>
-            </div>
 
-            {/* Mobile Menu */}
-            <div className={`lg:hidden transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-110 opacity-100' : 'max-h-0 opacity-0'
-                }`}>
-                <div className="px-4 py-4 bg-white/95 backdrop-blur-xl border-t border-gray-200/20">
-                    <div className="space-y-2">
-                        {navItems.map((item) => {
-                            const Icon = item.icon;
+                {/* Mobile Navigation */}
+                <div className={`lg:hidden transition-all duration-500 ease-out overflow-hidden ${isOpen
+                    ? 'max-h-110 opacity-100 pb-6'
+                    : 'max-h-0 opacity-0 pb-0'
+                    }`}>
+                    <div className="pt-4 space-y-2">
+                        {navItems.map((item, index) => {
+                            const isActive = pathname === item.href;
+
                             return (
                                 <a
-                                    key={item.name}
+                                    key={index}
                                     href={item.href}
-                                    className={`flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 ${item.active
-                                        ? 'text-blue-600 bg-blue-50/80'
-                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50/80'
+                                    className={`block px-4 py-3 rounded-xl text-base font-medium transition-all duration-300 ease-out ${isActive
+                                        ? 'text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/25'
+                                        : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 hover:translate-x-1'
                                         }`}
+                                    onClick={() => setIsOpen(false)}
                                 >
-                                    <Icon className="w-5 h-5" />
-                                    <span>{item.name}</span>
+                                    <div className="flex items-center justify-between">
+                                        <span>{item.name}</span>
+                                        {isActive && (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        )}
+                                    </div>
                                 </a>
                             );
                         })}

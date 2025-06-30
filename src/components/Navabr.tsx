@@ -17,12 +17,11 @@ const Navbar = () => {
     }, []);
 
     const menuItems = [
-        { name: 'Beranda', href: '#', active: true },
-        { name: 'Layanan', href: '#' },
-        { name: 'Konsultasi', href: '#' },
-        { name: 'Portfolio', href: '#' },
-        { name: 'Tentang', href: '#' },
-        { name: 'Kontak', href: '#' }
+        { name: 'Beranda', href: '/home', active: true },
+        { name: 'Artikel', href: '#' },
+        { name: 'Konsultasi', href: '/konsultasi' },
+        { name: 'Riwayat', href: '#' },
+        { name: 'Kontak', href: '#' },
     ];
 
     return (

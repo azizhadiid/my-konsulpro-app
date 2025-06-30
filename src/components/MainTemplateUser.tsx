@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import NavbarUser from "@/app/home/components/NavbarUser";
+import Footer from './Footer';
 
 interface MainTemplateUserProps {
     children: ReactNode;
@@ -13,6 +14,9 @@ const MainTemplateUser = ({ children }: MainTemplateUserProps) => {
 
             {/* Konten halaman akan dirender di sini */}
             {children}
+
+            {/* Footer */}
+            <Footer />
         </main>
     );
 };

@@ -123,7 +123,7 @@ const Footer: React.FC = () => {
 
                             {/* CTA Button */}
                             <Link
-                                href="/auth/login"
+                                href="/konsultasi"
                                 className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25"
                             >
                                 <span>Konsultasi Gratis</span>

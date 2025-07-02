@@ -1,7 +1,7 @@
 'use client'
 
 import MainTemplateAdmin from "../components/MainTemplateAdmin";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const DashboardPage = () => {
     const [stats] = useState([
@@ -17,6 +17,13 @@ const DashboardPage = () => {
         { title: "Project milestone reached", time: "1 hour ago", type: "project" },
         { title: "Payment received", time: "3 hours ago", type: "payment" },
     ]);
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            window.location.href = "/auth/login";
+        }
+    }, []);
 
     return (
         <MainTemplateAdmin>

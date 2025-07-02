@@ -2,7 +2,7 @@
 
 import Swal from 'sweetalert2';
 import { IoIosLogOut } from "react-icons/io";
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface HeaderProps {
     setSidebarOpen: (open: boolean) => void;
@@ -10,6 +10,7 @@ interface HeaderProps {
 
 const Header = ({ setSidebarOpen }: HeaderProps) => {
     const router = useRouter();
+    const pathname = usePathname();
 
     const handleLogout = () => {
         Swal.fire({
@@ -35,6 +36,20 @@ const Header = ({ setSidebarOpen }: HeaderProps) => {
             }
         });
     };
+
+    const getPageTitle = (path: string) => {
+        if (path.includes('/admin/article/tambah')) {
+            return 'Tambah Artikel';
+        }
+        if (path.includes('/admin/article/edit')) {
+            return 'Edit Artikel';
+        }
+        if (path.includes('/admin/verifikasi')) {
+            return 'Verifikasi Konsultasi';
+        }
+        return 'Dashboard'; // Default
+    };
+
     return (
         <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 lg:px-8 py-4">
             <div className="flex items-center justify-between">
@@ -55,7 +70,7 @@ const Header = ({ setSidebarOpen }: HeaderProps) => {
                         <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                         </svg>
-                        <span className="text-gray-900 dark:text-white font-medium">Dashboard</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{getPageTitle(pathname)}</span>
                     </nav>
                 </div>
 

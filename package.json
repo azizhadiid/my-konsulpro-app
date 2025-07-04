@@ -19,7 +19,8 @@
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "react-toastify": "^11.0.5",
-    "sweetalert2": "^11.22.1"
+    "sweetalert2": "^11.22.1",
+    "use-debounce": "^10.0.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

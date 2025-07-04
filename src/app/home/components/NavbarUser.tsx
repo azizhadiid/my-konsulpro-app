@@ -52,7 +52,7 @@ const NavbarUser = () => {
 
     const navItems = [
         { name: 'Beranda', href: '/home' },
-        { name: 'Artikel', href: '#' },
+        { name: 'Artikel', href: '/article' },
         { name: 'Konsultasi', href: '/konsultasi' },
         { name: 'Riwayat', href: '#' },
         { name: 'Kontak', href: '/kontak' },
@@ -95,7 +95,7 @@ const NavbarUser = () => {
                     {/* Desktop Navigation */}
                     <div className="hidden lg:flex items-center space-x-1">
                         {navItems.map((item, index) => {
-                            const isActive = pathname === item.href;
+                            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
 
                             return (
                                 <a
@@ -171,7 +171,7 @@ const NavbarUser = () => {
                     }`}>
                     <div className="pt-4 space-y-2">
                         {navItems.map((item, index) => {
-                            const isActive = pathname === item.href;
+                            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
 
                             return (
                                 <a

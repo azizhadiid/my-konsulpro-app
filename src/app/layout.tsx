@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Script from 'next/script';
 
 const inter = Inter({
   variable: "--font-inter",
@@ -24,6 +25,11 @@ export default function RootLayout({
       <body
         className={`${inter.variable} antialiased`}
       >
+        <Script
+          src={`https://app.${process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === 'true' ? '' : 'sandbox.'}midtrans.com/snap/snap.js`}
+          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+          strategy="beforeInteractive"
+        />
         {children}
       </body>
     </html>

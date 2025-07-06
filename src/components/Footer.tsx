@@ -70,7 +70,7 @@ const Footer: React.FC = () => {
     ];
 
     const contactInfo = [
-        { icon: MdEmail, text: 'konuslPro@gmail.com', href: 'mailto:hello@yourcompany.com' },
+        { icon: Mail, text: 'konuslPro@gmail.com', href: 'mailto:hello@yourcompany.com' },
         { icon: Phone, text: '+62 21 1234 5678', href: 'tel:+622112345678' },
         { icon: MapPin, text: 'Jakarta, Indonesia', href: '#' }
     ];

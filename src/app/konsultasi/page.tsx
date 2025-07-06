@@ -12,10 +12,11 @@ import {
     BarChart3,
     Code,
     Building2,
-    Target // Untuk icon deskripsi
+    Target
 } from 'lucide-react';
 
-import Swal from 'sweetalert2'; // Tetap gunakan Swal
+import Swal from 'sweetalert2';
+import { consultationService } from './services/consultationService';
 import MainTemplateUser from '@/components/MainTemplateUser';
 import ConsultationHeader from './components/ConsultationHeader';
 import FormField from './components/FormField';
@@ -92,17 +93,17 @@ const KonsultasiPage = () => {
         setTotalPrice(formData.duration * pricePerMonth);
     }, [formData.duration]);
 
-    const handleInputChange = (field: keyof typeof formData, value: string | number) => {
+    const handleInputChange = (field, value) => {
         setFormData(prev => ({
             ...prev,
             [field]: value
         }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validasi sederhana
+        // Validasi
         if (!formData.title.trim() || !formData.description.trim() || !formData.category || formData.duration <= 0) {
             Swal.fire({
                 icon: 'error',
@@ -122,36 +123,121 @@ const KonsultasiPage = () => {
 
         setIsSubmitting(true);
 
-        // Simulate API call
-        setTimeout(() => {
-            console.log('Consultation Data:', {
-                ...formData,
-                totalPrice,
-                status: 'pending',
-                submissionDate: new Date().toISOString()
-            });
+        try {
+            // Siapkan data untuk dikirim ke API
+            const consultationData = {
+                title: formData.title,
+                description: formData.description,
+                category: formData.category,
+                duration: formData.duration,
+                total_price: totalPrice
+            };
 
-            setIsSubmitting(false);
-            // Reset form
-            setFormData({
-                title: '',
-                description: '',
-                duration: 1,
-                category: ''
-            });
+            // Kirim ke backend
+            const response = await consultationService.create(consultationData);
 
-            // Show success message
+            if (response.success) {
+                const { snap_token, consultation } = response.data;
+
+                // Tampilkan konfirmasi sebelum redirect ke pembayaran
+                const result = await Swal.fire({
+                    icon: 'success',
+                    title: 'Konsultasi Berhasil Dibuat!',
+                    html: `
+                        <div class="text-left">
+                            <p><strong>Judul:</strong> ${consultation.title}</p>
+                            <p><strong>Durasi:</strong> ${consultation.duration} bulan</p>
+                            <p><strong>Kategori:</strong> ${consultationCategories.find(cat => cat.value === consultation.category)?.label}</p>
+                            <p><strong>Total Harga:</strong> Rp ${consultation.total_price.toLocaleString('id-ID')}</p>
+                            <p class="mt-4 text-gray-600">Klik "Lanjut Pembayaran" untuk melanjutkan ke proses pembayaran.</p>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Lanjut Pembayaran',
+                    cancelButtonText: 'Nanti Saja',
+                    customClass: {
+                        container: 'my-swal-container',
+                        popup: 'my-swal-popup',
+                        header: 'my-swal-header',
+                        title: 'my-swal-title',
+                        content: 'my-swal-content',
+                        confirmButton: 'my-swal-confirm-button',
+                        cancelButton: 'my-swal-cancel-button',
+                    }
+                });
+
+                if (result.isConfirmed) {
+                    // Redirect ke Midtrans Snap
+                    window.snap.pay(snap_token, {
+                        onSuccess: function (result) {
+                            console.log('Payment success:', result);
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Pembayaran Berhasil!',
+                                text: 'Terima kasih, pembayaran Anda telah berhasil diproses.',
+                                customClass: {
+                                    container: 'my-swal-container',
+                                    popup: 'my-swal-popup',
+                                    header: 'my-swal-header',
+                                    title: 'my-swal-title',
+                                    content: 'my-swal-content',
+                                    confirmButton: 'my-swal-confirm-button',
+                                }
+                            });
+                        },
+                        onPending: function (result) {
+                            console.log('Payment pending:', result);
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Pembayaran Pending',
+                                text: 'Pembayaran Anda sedang diproses. Silakan cek status pembayaran secara berkala.',
+                                customClass: {
+                                    container: 'my-swal-container',
+                                    popup: 'my-swal-popup',
+                                    header: 'my-swal-header',
+                                    title: 'my-swal-title',
+                                    content: 'my-swal-content',
+                                    confirmButton: 'my-swal-confirm-button',
+                                }
+                            });
+                        },
+                        onError: function (result) {
+                            console.log('Payment error:', result);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Pembayaran Gagal',
+                                text: 'Terjadi kesalahan saat memproses pembayaran. Silakan coba lagi.',
+                                customClass: {
+                                    container: 'my-swal-container',
+                                    popup: 'my-swal-popup',
+                                    header: 'my-swal-header',
+                                    title: 'my-swal-title',
+                                    content: 'my-swal-content',
+                                    confirmButton: 'my-swal-confirm-button',
+                                }
+                            });
+                        },
+                        onClose: function () {
+                            console.log('Payment popup closed');
+                        }
+                    });
+                }
+
+                // Reset form setelah berhasil
+                setFormData({
+                    title: '',
+                    description: '',
+                    duration: 1,
+                    category: ''
+                });
+            }
+
+        } catch (error: any) {
+            console.error('Error creating consultation:', error);
             Swal.fire({
-                icon: 'success',
-                title: 'Konsultasi Berhasil Diajukan!',
-                html: `
-                    <p><strong>Judul:</strong> ${formData.title}</p>
-                    <p><strong>Durasi:</strong> ${formData.duration} bulan</p>
-                    <p><strong>Bidang:</strong> ${consultationCategories.find(cat => cat.value === formData.category)?.label}</p>
-                    <p><strong>Total Harga:</strong> Rp ${totalPrice.toLocaleString('id-ID')}</p>
-                    <p class="mt-4 text-gray-600 dark:text-gray-400">Tim kami akan segera meninjau permohonan Anda.</p>
-                `,
-                confirmButtonText: 'Oke',
+                icon: 'error',
+                title: 'Terjadi Kesalahan',
+                text: error.message || 'Gagal membuat konsultasi. Silakan coba lagi.',
                 customClass: {
                     container: 'my-swal-container',
                     popup: 'my-swal-popup',
@@ -161,7 +247,9 @@ const KonsultasiPage = () => {
                     confirmButton: 'my-swal-confirm-button',
                 }
             });
-        }, 2000);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -202,7 +290,7 @@ const KonsultasiPage = () => {
                                         value={formData.description}
                                         onChange={(e) => handleInputChange('description', e.target.value)}
                                         rows={6}
-                                        placeholder="Jelaskan secara detail tentang:\n• Masalah yang dihadapi saat ini\n• Tujuan yang ingin dicapai\n• Ekspektasi hasil konsultasi\n• Kendala atau batasan yang ada"
+                                        placeholder="Jelaskan secara detail tentang:&#10;• Masalah yang dihadapi saat ini&#10;• Tujuan yang ingin dicapai&#10;• Ekspektasi hasil konsultasi&#10;• Kendala atau batasan yang ada"
                                         className="w-full px-6 py-4 text-lg bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white resize-none"
                                         required
                                     />

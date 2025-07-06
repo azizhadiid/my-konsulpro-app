@@ -15,6 +15,7 @@ import {
     Users,
     TrendingUp
 } from 'lucide-react';
+import { MdEmail } from 'react-icons/md';
 
 interface FooterLink {
     label: string;
@@ -69,7 +70,7 @@ const Footer: React.FC = () => {
     ];
 
     const contactInfo = [
-        { icon: Mail, text: 'hello@yourcompany.com', href: 'mailto:hello@yourcompany.com' },
+        { icon: MdEmail, text: 'konuslPro@gmail.com', href: 'mailto:hello@yourcompany.com' },
         { icon: Phone, text: '+62 21 1234 5678', href: 'tel:+622112345678' },
         { icon: MapPin, text: 'Jakarta, Indonesia', href: '#' }
     ];
@@ -126,7 +127,7 @@ const Footer: React.FC = () => {
                                 href="/konsultasi"
                                 className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25"
                             >
-                                <span>Konsultasi Gratis</span>
+                                <span>Mulai Konsultasi</span>
                                 <ArrowRight className="w-4 h-4" />
                             </Link>
                         </div>

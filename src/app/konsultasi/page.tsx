@@ -120,38 +120,51 @@ const KonsultasiPage = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.title.trim() || !formData.description.trim() || !formData.category || formData.duration <= 0) {
-            Swal.fire({ icon: 'error', title: 'Form belum lengkap' });
+        if (!formData.title || !formData.description || !formData.category || formData.duration <= 0) {
+            Swal.fire('Lengkapi semua data terlebih dahulu', '', 'error');
             return;
         }
 
-        setIsSubmitting(true);
         const token = localStorage.getItem('token');
+        setIsSubmitting(true);
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/consultation', {
+            // 1. Minta snap token dulu (jangan simpan ke DB dulu!)
+            const response = await axios.post('http://127.0.0.1:8000/api/payment-token', {
                 title: formData.title,
                 description: formData.description,
                 category: formData.category,
                 duration: formData.duration
             }, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    Authorization: `Bearer ${token}`
                 }
             });
 
             const { snap_token } = response.data;
 
+            // 2. Jalankan Midtrans Snap
             window.snap.pay(snap_token, {
-                onSuccess: function (result) {
-                    Swal.fire('Pembayaran Berhasil', '', 'success');
+                onSuccess: async function (result: any) {
+                    await axios.post('http://127.0.0.1:8000/api/consultation/save', {
+                        ...formData,
+                        status: 'paid'
+                    }, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    Swal.fire('Pembayaran Berhasil!', '', 'success');
                 },
-                onPending: function (result) {
-                    Swal.fire('Menunggu Pembayaran', '', 'info');
+                onPending: async function (result: any) {
+                    await axios.post('http://127.0.0.1:8000/api/consultation/save', {
+                        ...formData,
+                        status: 'pending'
+                    }, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    Swal.fire('Pembayaran Menunggu!', '', 'info');
                 },
-                onError: function (result) {
-                    Swal.fire('Pembayaran Gagal', '', 'error');
+                onError: function () {
+                    Swal.fire('Pembayaran Gagal!', '', 'error');
                 },
                 onClose: function () {
                     console.log('Popup ditutup');
@@ -159,13 +172,11 @@ const KonsultasiPage = () => {
             });
 
         } catch (error) {
-            console.error(error);
-            Swal.fire('Gagal mengirim permintaan konsultasi', '', 'error');
+            Swal.fire('Terjadi Kesalahan!', '', 'error');
         } finally {
             setIsSubmitting(false);
         }
     };
-
 
     return (
         <MainTemplateUser>

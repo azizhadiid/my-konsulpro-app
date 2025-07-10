@@ -1,5 +1,5 @@
 // src/lib/api.ts
-import { RegisterFormData } from '@/types/auth';
+import { RegisterFormData, LoginFormData, LoginResponse } from '@/types/auth';
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -46,6 +46,8 @@ export default api;
 
 // You can also create specific API service functions here
 export const authService = {
+    // Register
     register: (data: RegisterFormData) => api.post('/register', data),
-    // login: (data: LoginData) => api.post('/login', data),
+    // Login
+    login: (data: LoginFormData) => api.post<LoginResponse>('/login', data),
 };

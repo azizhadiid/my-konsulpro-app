@@ -1,4 +1,6 @@
 // src/types/auth.d.ts
+
+// Existing types from Register
 export interface RegisterFormData {
     name: string;
     email: string;
@@ -22,4 +24,25 @@ export interface RegisterResponse {
         created_at: string;
         updated_at: string;
     };
+}
+
+// New types for Login
+export interface LoginFormData {
+    email: string;
+    password: string;
+}
+
+export interface UserData {
+    id: number;
+    name: string;
+    email: string;
+    role: 'admin' | 'user'; // Tambahkan role jika ada
+    email_verified_at: string | null; // Tambahkan ini untuk verifikasi email di masa depan
+    // ... properti user lainnya dari backend
+}
+
+export interface LoginResponse {
+    message: string;
+    user: UserData;
+    token: string;
 }

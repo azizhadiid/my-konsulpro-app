@@ -46,3 +46,12 @@ export interface LoginResponse {
     user: UserData;
     token: string;
 }
+
+// Forgot
+export interface ForgotPasswordFormData {
+    email: string;
+}
+
+export interface ForgotPasswordResponse {
+    status: string; // Laravel mengirim 'status' dengan pesan
+}

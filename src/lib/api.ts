@@ -1,5 +1,5 @@
 // src/lib/api.ts
-import { RegisterFormData, LoginFormData, LoginResponse } from '@/types/auth';
+import { RegisterFormData, LoginFormData, LoginResponse, ForgotPasswordFormData, ForgotPasswordResponse } from '@/types/auth';
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -50,4 +50,6 @@ export const authService = {
     register: (data: RegisterFormData) => api.post('/register', data),
     // Login
     login: (data: LoginFormData) => api.post<LoginResponse>('/login', data),
+    // Forogt
+    forgotPassword: (data: ForgotPasswordFormData) => api.post<ForgotPasswordResponse>('/forgot-password', data),
 };

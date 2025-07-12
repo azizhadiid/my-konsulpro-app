@@ -55,3 +55,15 @@ export interface ForgotPasswordFormData {
 export interface ForgotPasswordResponse {
     status: string; // Laravel mengirim 'status' dengan pesan
 }
+
+// Reset Password
+export interface ResetPasswordFormData {
+    token: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+}
+
+export interface ResetPasswordResponse {
+    message: string;
+}

@@ -1,19 +1,42 @@
 'use client'
 
-// src/components/ui/Button.tsx
 import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     isLoading?: boolean;
     children: React.ReactNode;
+    variant?: 'primary' | 'secondary' | 'outline';
+    size?: 'sm' | 'md' | 'lg';
 }
 
-const Button: React.FC<ButtonProps> = ({ isLoading, children, ...props }) => {
+const Button: React.FC<ButtonProps> = ({
+    isLoading,
+    children,
+    variant = 'primary',
+    size = 'md',
+    className = '',
+    ...props
+}) => {
+    const baseClasses = "font-semibold rounded-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2";
+
+    const variantClasses = {
+        primary: "bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white",
+        secondary: "bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white",
+        outline: "border-2 border-white/20 text-white hover:border-white/40 hover:bg-white/10"
+    };
+
+    const sizeClasses = {
+        sm: "py-2 px-4 text-sm",
+        md: "py-3 px-6 text-base",
+        lg: "py-4 px-8 text-lg"
+    };
+
+    const combinedClasses = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+
     return (
         <button
-            type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+            className={combinedClasses}
             {...props}
         >
             {isLoading ? (

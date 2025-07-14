@@ -8,6 +8,7 @@ import {
     ResetPasswordFormData,
     ResetPasswordResponse,
 } from '@/types/auth';
+import { FullProfileResponse, UserProfileData } from '@/types/user';
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -28,7 +29,7 @@ const api = axios.create({
 // Optional: Add request interceptors (e.g., for adding tokens)
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('authToken'); // Example for token
+        const token = localStorage.getItem('token'); // Example for token
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -62,4 +63,14 @@ export const authService = {
     forgotPassword: (data: ForgotPasswordFormData) => api.post<ForgotPasswordResponse>('/forgot-password', data),
     // Reset
     resetPassword: (data: ResetPasswordFormData) => api.post<ResetPasswordResponse>('/reset-password', data),
+
+    // Profile
+    getProfile: () => api.get<FullProfileResponse>('/profile'),
+
+    // New: Update user profile (uses FormData for file uploads)
+    updateProfile: (data: FormData) => api.post<FullProfileResponse>('/profile', data, {
+        headers: {
+            'Content-Type': 'multipart/form-data', // Penting untuk FormData
+        },
+    }),
 };

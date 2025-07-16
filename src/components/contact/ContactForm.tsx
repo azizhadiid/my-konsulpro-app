@@ -1,90 +1,44 @@
 'use client';
 
 import React, { useState, FormEvent, useEffect } from 'react';
-import toast from 'react-hot-toast'; // Import toast
+import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_LARAVEL_API_URL || 'http://localhost:8000/api';
-
-interface UserData {
-    id: number;
-    name: string;
-    email: string;
-    // Tambahkan properti lain yang mungkin ada di objek user Anda
-}
+import { authService } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
+import { ContactFormData } from '@/types/contact';
 
 const ContactForm: React.FC = () => {
     const router = useRouter();
-    const [formData, setFormData] = useState({
+    const { user, loading: authLoading } = useAuth(); // Ambil user dan loading dari AuthContext
+
+    const [formData, setFormData] = useState<ContactFormData>({
         name: '',
         email: '',
         subject: '',
         message: '',
     });
-    const [user, setUser] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(false);
     const [fetchUserError, setFetchUserError] = useState<string | null>(null);
 
+    // Inisialisasi form data dengan nama dan email user jika sudah login
     useEffect(() => {
-        const fetchUserData = async () => {
-            setLoading(true);
-            setFetchUserError(null);
-            const token = localStorage.getItem('token'); // Sesuaikan dengan key token Anda
-
-            if (!token) {
-                // Jika tidak ada token, mungkin user belum login, atau sesi berakhir
-                // Kita bisa biarkan form kosong dan tidak readonly, atau redirect.
-                // Berdasarkan kontak/page.tsx Anda, ada redirect jika tidak ada token.
-                // Jadi, diasumsikan user selalu memiliki token di sini.
-                // Atau, jika form kontak ini bisa diisi anonim, Anda bisa ubah logika.
-                setLoading(false);
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/user`, { // Endpoint Laravel untuk ambil data user
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        toast.error('Sesi Anda telah berakhir. Mohon login kembali.');
-                        localStorage.removeItem('token');
-                        router.push('/auth/login');
-                    }
-                    throw new Error(data.message || 'Gagal mengambil data user.');
-                }
-
-                setUser(data);
-                setFormData((prev) => ({
-                    ...prev,
-                    name: data.name,
-                    email: data.email,
-                }));
-            } catch (err: any) {
-                console.error('Error fetching user data:', err);
-                setFetchUserError(err.message || 'Gagal memuat data pengguna.');
-                toast.error('Gagal memuat data pengguna. Mohon coba refresh halaman.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUserData();
-    }, [router]); // Tambahkan router sebagai dependency jika digunakan di useEffect
+        setFetchUserError(null);
+        if (user) {
+            setFormData((prev) => ({
+                ...prev,
+                name: user.name,
+                email: user.email,
+            }));
+        }
+    }, [user]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         // Jangan izinkan perubahan pada name dan email jika sudah diisi dari user data
-        if (name === 'name' && user) return;
-        if (name === 'email' && user) return;
+        // karena ini diasumsikan untuk user yang sudah login
+        if (user && (name === 'name' || name === 'email')) {
+            return;
+        }
 
         setFormData((prevData) => ({
             ...prevData,
@@ -97,42 +51,17 @@ const ContactForm: React.FC = () => {
         setLoading(true);
         toast.dismiss(); // Tutup toast yang mungkin masih terbuka
 
-        const token = localStorage.getItem('token');
-        if (!token) {
-            toast.error('Anda belum login. Silakan login terlebih dahulu.');
-            router.push('/auth/login');
+        // Validasi sederhana di frontend
+        if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+            toast.error('Semua field wajib diisi.');
             setLoading(false);
             return;
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/send-contact-email`, { // Endpoint Laravel Brevo
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify(formData),
-            });
+            const response = await authService.sendContactEmail(formData); // Menggunakan authService
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                let errorMessage = 'Gagal mengirim pesan kontak. Silakan coba lagi.';
-                if (response.status === 401) {
-                    errorMessage = 'Sesi Anda telah berakhir. Mohon login kembali.';
-                    localStorage.removeItem('token');
-                    router.push('/auth/login');
-                } else if (response.status === 422 && data.errors) {
-                    errorMessage = Object.values(data.errors).flat().join('\n');
-                } else if (data.message) {
-                    errorMessage = data.message;
-                }
-                throw new Error(errorMessage);
-            }
-
-            toast.success(data.message || 'Pesan Anda telah berhasil dikirim!');
+            toast.success(response.data.message || 'Pesan Anda telah berhasil dikirim!');
             // Reset hanya subjek dan pesan karena nama dan email dari user
             setFormData((prev) => ({
                 ...prev,
@@ -141,15 +70,24 @@ const ContactForm: React.FC = () => {
             }));
 
         } catch (err: any) {
-            console.error('Error sending contact email:', err);
-            toast.error(err.message || 'Terjadi kesalahan jaringan.');
+            console.error('Error sending contact email:', err.response?.data || err.message);
+            setFetchUserError(err.message || 'Gagal memuat data pengguna.');
+            if (err.response?.status === 422 && err.response?.data?.errors) {
+                // Tangani error validasi Laravel
+                const errors = err.response.data.errors;
+                Object.values(errors).flat().forEach((message: any) => toast.error(message));
+            } else if (err.response?.data?.message) {
+                toast.error(err.response.data.message);
+            } else {
+                toast.error('Gagal mengirim pesan kontak. Silakan coba lagi.');
+            }
         } finally {
             setLoading(false);
         }
     };
 
     // Tampilkan loading state atau error jika user data belum terambil
-    if (loading && !user && !fetchUserError) {
+    if (authLoading && !fetchUserError) { // Gunakan authLoading dari AuthContext
         return (
             <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 flex items-center justify-center h-full min-h-[300px]">
                 <p className="text-gray-600">Memuat data pengguna...</p>

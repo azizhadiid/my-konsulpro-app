@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import MainTemplateUser from "@/components/MainTemplateUser";
-import ContactInfoCard from "./components/ContactInfoCard";
-import ContactForm from "./components/ContactForm";
+import ContactInfoCard from '@/components/contact/ContactInfoCard';
+import ContactForm from '@/components/contact/ContactForm';
 
 const KontakPage = () => {
     // Logic untuk redirect jika tidak ada token, tetap di sini atau bisa dipindahkan ke Layout/Middleware

@@ -9,6 +9,7 @@ import {
     ResetPasswordResponse,
 } from '@/types/auth';
 import { FullProfileResponse, UserProfileData } from '@/types/user';
+import { ContactFormData, ContactResponse } from '@/types/contact';
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -73,4 +74,7 @@ export const authService = {
             'Content-Type': 'multipart/form-data', // Penting untuk FormData
         },
     }),
+
+    // New: Send contact email
+    sendContactEmail: (data: ContactFormData) => api.post<ContactResponse>('/send-contact-email', data),
 };

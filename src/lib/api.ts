@@ -10,6 +10,7 @@ import {
 } from '@/types/auth';
 import { FullProfileResponse, UserProfileData } from '@/types/user';
 import { ContactFormData, ContactResponse } from '@/types/contact';
+import { ConsultationHistoryResponse } from '@/types/consultation';
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -77,4 +78,7 @@ export const authService = {
 
     // New: Send contact email
     sendContactEmail: (data: ContactFormData) => api.post<ContactResponse>('/send-contact-email', data),
+
+    // Riwayat Konsultasi
+    getConsultationHistory: () => api.get<ConsultationHistoryResponse>('/consultation/history'),
 };

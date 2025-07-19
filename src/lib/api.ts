@@ -11,6 +11,7 @@ import {
 import { FullProfileResponse, UserProfileData } from '@/types/user';
 import { ContactFormData, ContactResponse } from '@/types/contact';
 import { ConsultationHistoryResponse } from '@/types/consultation';
+import { ArtikelListResponse, ArtikelDetailResponse } from '@/types/artikel';
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -81,4 +82,10 @@ export const authService = {
 
     // Riwayat Konsultasi
     getConsultationHistory: () => api.get<ConsultationHistoryResponse>('/consultation/history'),
+
+    // Artikel
+    getArtikels: (params?: { page?: number; search?: string; per_page?: number }) =>
+        api.get<ArtikelListResponse>('/artikels', { params }),
+    getArtikelById: (id: string | number) =>
+        api.get<ArtikelDetailResponse>(`/artikels/${id}`),
 };

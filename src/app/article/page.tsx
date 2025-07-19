@@ -1,84 +1,82 @@
 'use client';
 
 import MainTemplateUser from '@/components/MainTemplateUser';
-import { useEffect, useState, useCallback } from 'react'; // Tambahkan useCallback
-import axios from 'axios';
-import SearchBar from './components/SearchBar';
-import Loading from './components/Loading'; // Pastikan path benar
-import ArtikelCard from './components/ArtikelCard'; // Pastikan path benar
-import Pagination from './components/Pagination'; // Pastikan path benar
-import { useDebounce } from 'use-debounce'; // Import useDebounce
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
+import { toast } from 'react-toastify'; // Menggunakan react-toastify
+import { authService } from '@/lib/api'; // Import authService
+import { Artikel, ArtikelListResponse } from '@/types/artikel'; // Import tipe Artikel dan ArtikelListResponse
+import { useDebounce } from 'use-debounce';
 
-// Definisikan interface untuk struktur data artikel (jika belum ada)
-interface Artikel {
-    id: number;
-    user_id: number;
-    judul: string;
-    deskripsi: string;
-    kategori: string;
-    tanggal_publish: string;
-    foto: string | null;
-    foto_url: string | null;
-    created_at: string;
-    updated_at: string;
-}
+// Import komponen-komponen yang sudah ada (pastikan path benar)
+import SearchBar from '@/components/article/SearchBar';
+import Loading from '@/components/article/Loading';
+import Pagination from '@/components/article/Pagination';
+import ArtikelCard from '@/components/article/ArtikelCard';
 
 export default function ArtikelPage() {
-    const [artikels, setArtikels] = useState<Artikel[]>([]); // Tentukan tipe Artikel[]
+    const router = useRouter(); // Inisialisasi useRouter
+    const [artikels, setArtikels] = useState<Artikel[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState(''); // Ganti nama state 'search' menjadi 'searchTerm' agar lebih jelas
-    const [debouncedSearchTerm] = useDebounce(searchTerm, 500); // Debounce search term
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
-    const [totalItems, setTotalItems] = useState(0); // Tambahkan state untuk total item
-    const [perPage, setPerPage] = useState(6); // Default 6 artikel per halaman
+    const [totalItems, setTotalItems] = useState(0);
+    const [perPage, setPerPage] = useState(6);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
         const token = localStorage.getItem('token');
-        // Autentikasi: Jika artikel memang hanya untuk user yang login, maka ini diperlukan.
-        // Jika publik, Anda bisa menghapusnya dan header Authorization.
+
         if (!token) {
-            window.location.href = '/auth/login';
+            toast.error("Anda harus login untuk mengakses halaman ini.");
+            router.push('/auth/login');
             return;
         }
 
         try {
-            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/artikels`, {
-                headers: { Authorization: `Bearer ${token}` },
-                params: { page, search: debouncedSearchTerm, per_page: perPage }, // Gunakan debouncedSearchTerm dan perPage
+            const response = await authService.getArtikels({ // Menggunakan authService
+                page,
+                search: debouncedSearchTerm,
+                per_page: perPage
             });
+
             setArtikels(response.data.data);
             setLastPage(response.data.last_page);
-            setTotalItems(response.data.total); // Set total item dari response
-            setPerPage(response.data.per_page); // Update perPage jika backend mengirim nilai berbeda
-        } catch (error) {
+            setTotalItems(response.data.total);
+            setPerPage(response.data.per_page);
+        } catch (error: any) {
             console.error('Gagal memuat artikel', error);
-            // Tambahkan penanganan error yang lebih baik, misalnya SweetAlert2
+            if (error.response) {
+                if (error.response.status === 401) {
+                    toast.error("Sesi Anda telah berakhir. Silakan login kembali.");
+                    localStorage.removeItem("token");
+                    router.push("/auth/login");
+                } else {
+                    toast.error(error.response.data.message || 'Terjadi kesalahan saat memuat artikel.');
+                }
+            } else {
+                toast.error('Terjadi kesalahan jaringan atau server.');
+            }
         } finally {
             setLoading(false);
         }
-    }, [page, debouncedSearchTerm, perPage]); // Dependencies untuk useCallback
+    }, [page, debouncedSearchTerm, perPage, router]); // Tambahkan router ke dependency list
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = '/auth/login';
-        } else {
-            fetchData();
-        }
-    }, [page, debouncedSearchTerm, perPage, fetchData]); // Tambahkan fetchData ke dependency list
+        fetchData();
+    }, [fetchData]);
 
-    const handleSearchChange = (value: string) => { // Menerima value langsung dari SearchBar
+    const handleSearchChange = (value: string) => {
         setSearchTerm(value);
-        setPage(1); // Reset halaman ke 1 setiap kali search term berubah
+        setPage(1);
     };
 
-    const handlePerPageChange = (value: number) => { // Menerima value langsung dari Pagination (jika mau di sana)
+    const handlePerPageChange = (value: number) => {
         setPerPage(value);
-        setPage(1); // Reset halaman ke 1
+        setPage(1);
     };
-
 
     return (
         <MainTemplateUser>
@@ -93,8 +91,7 @@ export default function ArtikelPage() {
                 </div>
 
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                    <SearchBar value={searchTerm} onChange={handleSearchChange} /> {/* Gunakan searchTerm */}
-                    {/* Select per page, bisa ditaruh di sini atau di komponen Pagination */}
+                    <SearchBar value={searchTerm} onChange={handleSearchChange} />
                     <div className="flex items-center space-x-2">
                         <label htmlFor="perPage" className="text-gray-700 dark:text-gray-300 font-medium text-base">Tampilkan:</label>
                         <select
@@ -113,7 +110,7 @@ export default function ArtikelPage() {
                 </div>
 
                 {loading ? (
-                    <Loading perPage={perPage} /> // Teruskan perPage ke Loading untuk jumlah skeleton
+                    <Loading perPage={perPage} />
                 ) : artikels.length === 0 ? (
                     <div className="text-center text-gray-500 dark:text-gray-400 py-20">
                         <p className="mb-4 text-2xl font-semibold">Ups! Artikel tidak ditemukan.</p>
@@ -127,13 +124,13 @@ export default function ArtikelPage() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-6">
-                        {artikels.map((artikel: Artikel) => ( // Tentukan tipe Artikel
+                        {artikels.map((artikel: Artikel) => (
                             <ArtikelCard key={artikel.id} artikel={artikel} />
                         ))}
                     </div>
                 )}
 
-                {artikels.length > 0 && ( // Tampilkan paginasi hanya jika ada artikel
+                {artikels.length > 0 && (
                     <Pagination page={page} lastPage={lastPage} setPage={setPage} totalItems={totalItems} perPage={perPage} />
                 )}
             </section>

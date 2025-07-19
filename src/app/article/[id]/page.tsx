@@ -3,16 +3,9 @@
 import MainTemplateUser from '@/components/MainTemplateUser';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-
-type Artikel = {
-    id: number;
-    judul: string;
-    deskripsi: string;
-    kategori: string;
-    tanggal_publish: string;
-    foto_url: string | null;
-};
+import { toast } from 'react-toastify'; // Menggunakan react-toastify
+import { authService } from '@/lib/api'; // Import authService
+import { Artikel } from '@/types/artikel'; // Import tipe Artikel
 
 export default function DetailArtikelPage() {
     const { id } = useParams();
@@ -23,27 +16,40 @@ export default function DetailArtikelPage() {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
+            toast.error("Anda harus login untuk mengakses halaman ini.");
             router.push('/auth/login');
             return;
         }
 
         const fetchData = async () => {
+            if (!id) return; // Pastikan ID ada sebelum fetch
+
             try {
-                const res = await axios.get(`http://localhost:8000/api/artikels/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                setArtikel(res.data.artikel);
-            } catch (err) {
+                const res = await authService.getArtikelById(id as string); // Menggunakan authService
+                setArtikel(res.data.artikel); // Akses properti 'artikel' dari respons
+            } catch (err: any) {
                 console.error('Gagal mengambil data artikel', err);
+                if (err.response) {
+                    if (err.response.status === 401) {
+                        toast.error("Sesi Anda telah berakhir. Silakan login kembali.");
+                        localStorage.removeItem("token");
+                        router.push("/auth/login");
+                    } else if (err.response.status === 404) {
+                        toast.error("Artikel tidak ditemukan.");
+                        setArtikel(null); // Set artikel ke null jika tidak ditemukan
+                    } else {
+                        toast.error(err.response.data.message || 'Terjadi kesalahan saat memuat artikel.');
+                    }
+                } else {
+                    toast.error('Terjadi kesalahan jaringan atau server.');
+                }
             } finally {
                 setLoading(false);
             }
         };
 
-        if (id) fetchData();
-    }, [id]);
+        fetchData(); // Panggil fetchData
+    }, [id, router]); // Tambahkan router ke dependency list
 
     if (loading) {
         return (

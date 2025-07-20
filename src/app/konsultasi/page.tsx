@@ -1,6 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2'; // Tetap gunakan Swal jika ini preferensi Anda
+import { useRouter } from 'next/navigation'; // Import useRouter
+import { toast } from 'react-toastify'; // Menggunakan react-toastify
+import { authService } from '@/lib/api'; // Import authService
+import { ConsultationFormData, ConsultationCategory } from '@/types/consultation-form'; // Import tipe baru
 import {
     MessageSquare,
     Calendar,
@@ -15,14 +20,13 @@ import {
     Target // Untuk icon deskripsi
 } from 'lucide-react';
 
-import Swal from 'sweetalert2'; // Tetap gunakan Swal
+// Import komponen-komponen yang sudah ada (pastikan path benar)
 import MainTemplateUser from '@/components/MainTemplateUser';
-import ConsultationHeader from './components/ConsultationHeader';
-import FormField from './components/FormField';
-import CategorySelection from './components/CategorySelection';
-import PriceSummaryCard from './components/PriceSummaryCard';
-import SubmitButton from './components/SubmitButton';
-import axios from 'axios';
+import ConsultationHeader from '@/components/consult/ConsultationHeader';
+import FormField from '@/components/consult/FormField';
+import CategorySelection from '@/components/consult/CategorySelection';
+import PriceSummaryCard from '@/components/consult/PriceSummaryCard';
+import SubmitButton from '@/components/consult/SubmitButton';
 
 declare global {
     interface Window {
@@ -40,17 +44,19 @@ declare global {
     }
 }
 
-
 const KonsultasiPage = () => {
+    const router = useRouter();
+
     // Autentikasi
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token) {
-            window.location.href = "/auth/login";
+            toast.error("Anda harus login untuk mengakses halaman ini.");
+            router.push("/auth/login");
         }
-    }, []);
+    }, [router]);
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<ConsultationFormData>({ // Menggunakan tipe ConsultationFormData
         title: '',
         description: '',
         duration: 1,
@@ -61,7 +67,7 @@ const KonsultasiPage = () => {
     const [totalPrice, setTotalPrice] = useState(pricePerMonth);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const consultationCategories = [
+    const consultationCategories: ConsultationCategory[] = [ // Menggunakan tipe ConsultationCategory[]
         {
             value: 'it-consulting',
             label: 'Konsultasi IT Umum',
@@ -110,7 +116,7 @@ const KonsultasiPage = () => {
         setTotalPrice(formData.duration * pricePerMonth);
     }, [formData.duration]);
 
-    const handleInputChange = (field: keyof typeof formData, value: string | number) => {
+    const handleInputChange = (field: keyof ConsultationFormData, value: string | number) => { // Menggunakan keyof ConsultationFormData
         setFormData(prev => ({
             ...prev,
             [field]: value
@@ -125,54 +131,68 @@ const KonsultasiPage = () => {
             return;
         }
 
-        const token = localStorage.getItem('token');
+        // Pastikan window.snap tersedia
+        if (typeof window === 'undefined' || !window.snap) {
+            Swal.fire('Error', 'Midtrans Snap script belum dimuat. Coba refresh halaman.', 'error');
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
-            // 1. Minta snap token dulu (jangan simpan ke DB dulu!)
-            const response = await axios.post('http://127.0.0.1:8000/api/payment-token', {
-                title: formData.title,
-                description: formData.description,
-                category: formData.category,
-                duration: formData.duration
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-
+            // 1. Minta snap token dulu
+            const response = await authService.getSnapToken(formData); // Menggunakan authService
             const { snap_token } = response.data;
 
             // 2. Jalankan Midtrans Snap
             window.snap.pay(snap_token, {
                 onSuccess: async function (result: any) {
-                    await axios.post('http://127.0.0.1:8000/api/consultation/save', {
-                        ...formData,
-                        status: 'paid'
-                    }, {
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
-                    Swal.fire('Pembayaran Berhasil!', '', 'success');
+                    try {
+                        await authService.saveConsultation({ // Menggunakan authService
+                            ...formData,
+                            status: 'paid'
+                        });
+                        Swal.fire('Pembayaran Berhasil!', 'Konsultasi Anda telah dibayar.', 'success');
+                        // Opsional: Redirect ke halaman riwayat atau halaman sukses
+                        router.push('/riwayat');
+                    } catch (saveError: any) {
+                        console.error("Error saving consultation after success:", saveError);
+                        Swal.fire('Gagal Menyimpan Data!', 'Pembayaran berhasil, tetapi data konsultasi gagal disimpan.', 'error');
+                    }
                 },
                 onPending: async function (result: any) {
-                    await axios.post('http://127.0.0.1:8000/api/consultation/save', {
-                        ...formData,
-                        status: 'pending'
-                    }, {
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
-                    Swal.fire('Pembayaran Menunggu!', '', 'info');
+                    try {
+                        await authService.saveConsultation({ // Menggunakan authService
+                            ...formData,
+                            status: 'pending'
+                        });
+                        Swal.fire('Pembayaran Menunggu!', 'Silakan selesaikan pembayaran Anda.', 'info');
+                        // Opsional: Redirect ke halaman riwayat atau halaman menunggu pembayaran
+                        router.push('/riwayat');
+                    } catch (saveError: any) {
+                        console.error("Error saving consultation after pending:", saveError);
+                        Swal.fire('Gagal Menyimpan Data!', 'Pembayaran menunggu, tetapi data konsultasi gagal disimpan.', 'error');
+                    }
                 },
-                onError: function () {
-                    Swal.fire('Pembayaran Gagal!', '', 'error');
+                onError: function (result: any) {
+                    console.error("Midtrans payment error:", result);
+                    Swal.fire('Pembayaran Gagal!', 'Terjadi kesalahan saat memproses pembayaran.', 'error');
                 },
                 onClose: function () {
-                    console.log('Popup ditutup');
+                    console.log('Popup pembayaran ditutup tanpa menyelesaikan transaksi.');
+                    // Opsional: Anda bisa menyimpan dengan status 'cancelled' atau tidak menyimpan sama sekali
+                    // Untuk kasus ini, kita tidak menyimpan jika ditutup tanpa status
+                    Swal.fire('Pembayaran Dibatalkan', 'Anda menutup jendela pembayaran.', 'warning');
                 }
             });
 
-        } catch (error) {
-            Swal.fire('Terjadi Kesalahan!', '', 'error');
+        } catch (error: any) {
+            console.error("Error getting snap token or submitting form:", error);
+            if (error.response?.data?.message) {
+                Swal.fire('Terjadi Kesalahan!', error.response.data.message, 'error');
+            } else {
+                Swal.fire('Terjadi Kesalahan!', 'Gagal memproses permintaan Anda. Coba lagi nanti.', 'error');
+            }
         } finally {
             setIsSubmitting(false);
         }

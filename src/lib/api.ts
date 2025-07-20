@@ -12,6 +12,12 @@ import { FullProfileResponse, UserProfileData } from '@/types/user';
 import { ContactFormData, ContactResponse } from '@/types/contact';
 import { ConsultationHistoryResponse } from '@/types/consultation';
 import { ArtikelListResponse, ArtikelDetailResponse } from '@/types/artikel';
+import {
+    ConsultationFormData,
+    PaymentTokenResponse,
+    SaveConsultationPayload,
+    ConsultationSaveResponse,
+} from '@/types/consultation-form';
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -88,4 +94,13 @@ export const authService = {
         api.get<ArtikelListResponse>('/artikels', { params }),
     getArtikelById: (id: string | number) =>
         api.get<ArtikelDetailResponse>(`/artikels/${id}`),
+
+    // konsultasi
+    // New: Get Midtrans Snap Token
+    getSnapToken: (data: ConsultationFormData) =>
+        api.post<PaymentTokenResponse>('/payment-token', data),
+
+    // New: Save Consultation after payment status
+    saveConsultation: (data: SaveConsultationPayload) =>
+        api.post<ConsultationSaveResponse>('/consultation/save', data),
 };

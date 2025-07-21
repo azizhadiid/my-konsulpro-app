@@ -1,10 +1,17 @@
+export interface UserProfile {
+    pekerjaan?: string | null;
+    foto?: string | null;
+    foto_url?: string | null;
+}
+
 export interface Testimonial {
     id: number;
     name: string;
     service: string;
     rating: number;
     review: string;
-    date: string; // e.g., "2 hari yang lalu"
+    date: string;
+    user_profile?: UserProfile;
 }
 
 export interface RatingStats {
@@ -18,6 +25,11 @@ export interface RatingListResponse {
     message: string;
     testimonials: Testimonial[];
     stats: RatingStats;
+}
+
+export interface HighRatedTestimonialsResponse {
+    message: string;
+    testimonials: Testimonial[];
 }
 
 export interface SubmitRatingPayload {

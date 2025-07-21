@@ -52,6 +52,11 @@ const RatingPage = () => {
     }, []);
 
     useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            window.location.href = "/auth/login";
+        }
+
         fetchRatingsData();
     }, [fetchRatingsData]);
 

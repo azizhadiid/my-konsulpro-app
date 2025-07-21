@@ -18,10 +18,10 @@ const Navbar = () => {
 
     const menuItems = [
         { name: 'Beranda', href: '/home', active: true },
-        { name: 'Artikel', href: '#' },
+        { name: 'Artikel', href: '/article' },
         { name: 'Konsultasi', href: '/konsultasi' },
-        { name: 'Riwayat', href: '#' },
-        { name: 'Kontak', href: '#' },
+        { name: 'Riwayat', href: '/riwayat' },
+        { name: 'Kontak', href: '/kontak' },
     ];
 
     return (

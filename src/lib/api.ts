@@ -21,6 +21,7 @@ import {
     RatingListResponse,
     SubmitRatingPayload,
     SubmitRatingResponse,
+    HighRatedTestimonialsResponse,
 } from '@/types/rating';
 import axios from 'axios';
 
@@ -110,4 +111,6 @@ export const authService = {
         api.post<SubmitRatingResponse>('/ratings', data),
     getRatingsAndStats: () =>
         api.get<RatingListResponse>('/ratings'),
+    getHighRatedTestimonials: () => // NEW API call for home page testimonials
+        api.get<HighRatedTestimonialsResponse>('/top-ratings'),
 };

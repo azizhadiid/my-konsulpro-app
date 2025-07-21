@@ -3,16 +3,29 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navabr";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { authService } from "@/lib/api";
+import { Testimonial, RatingStats, RatingListResponse } from "@/types/rating";
 
 export default function Home() {
+  const router = useRouter();
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [stats, setStats] = useState<RatingStats | null>(null); // State untuk statistik
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
-  const stats = [
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
+
+  const status = [
     { value: "200+", label: "Klien Terlayani", icon: "👥" },
     { value: "98%", label: "Tingkat Kepuasan", icon: "⭐" },
     { value: "24/7", label: "Support Ready", icon: "🚀" },
@@ -36,6 +49,48 @@ export default function Home() {
       icon: "🚀"
     }
   ];
+
+  useEffect(() => {
+    const fetchTestimonialsAndStats = async () => {
+      try {
+        setLoading(true);
+        // Pastikan Anda memanggil API yang mengembalikan RatingListResponse
+        // dan secara eksplisit tentukan tipenya jika perlu, meskipun TypeScript
+        // seringkali bisa menginferensinya.
+        const response = await authService.getHighRatedTestimonials(); // Ini akan mengembalikan AxiosResponse<RatingListResponse>
+        // Periksa struktur data yang diterima dari API
+        // Jika API mengembalikan data langsung di root, sesuaikan:
+        setTestimonials(response.data.testimonials);
+        setStats(response.data.stats); // Ini seharusnya sudah benar sekarang
+      } catch (err) {
+        console.error("Failed to fetch testimonials and stats:", err);
+        setError("Gagal memuat testimoni dan statistik. Silakan coba lagi nanti.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTestimonialsAndStats();
+  }, []);
+
+  const handleRatingClick = () => {
+    router.push("/rating");
+  };
+
+  // Fungsi helper untuk mendapatkan jumlah bintang penuh dari rata-rata rating
+  const getFullStars = (averageRating: string | undefined) => {
+    if (!averageRating) return 0;
+    const [ratingValue] = averageRating.split('/');
+    return Math.floor(parseFloat(ratingValue));
+  };
+
+  // Fungsi helper untuk memeriksa apakah ada bintang setengah
+  const hasHalfStar = (averageRating: string | undefined) => {
+    if (!averageRating) return false;
+    const [ratingValue] = averageRating.split('/');
+    return parseFloat(ratingValue) % 1 !== 0; // Jika ada desimal
+  };
+
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
@@ -96,7 +151,7 @@ export default function Home() {
 
               {/* Stats */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat, index) => (
+                {status.map((stat, index) => (
                   <div
                     key={index}
                     className={`text-center transform transition-all duration-700 delay-${index * 100} ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
@@ -156,18 +211,18 @@ export default function Home() {
 
         {/* Custom CSS for animations */}
         <style jsx>{`
-          @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-          }
-          .animate-float {
-            animation: float 3s ease-in-out infinite;
-          }
-          .animate-float-delayed {
-            animation: float 3s ease-in-out infinite;
-            animation-delay: 1.5s;
-          }
-        `}</style>
+                        @keyframes float {
+                            0%, 100% { transform: translateY(0px); }
+                            50% { transform: translateY(-10px); }
+                        }
+                        .animate-float {
+                            animation: float 3s ease-in-out infinite;
+                        }
+                        .animate-float-delayed {
+                            animation: float 3s ease-in-out infinite;
+                            animation-delay: 1.5s;
+                        }
+                    `}</style>
       </section>
 
       {/* Features Section */}
@@ -415,110 +470,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Client Success Stories / Case Studies */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-300 px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <span>Success Stories</span>
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-4">
-              Kesuksesan Klien adalah Prioritas Kami
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Lihat bagaimana kami membantu berbagai perusahaan mencapai target bisnis mereka
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Case Study 1 */}
-            <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
-              <div className="h-48 bg-gradient-to-br from-blue-500 to-indigo-600 relative overflow-hidden">
-                <div className="absolute inset-0 bg-black/20"></div>
-                <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
-                  Manufacturing
-                </div>
-                <div className="absolute bottom-4 left-4 text-white">
-                  <div className="text-2xl font-bold">320%</div>
-                  <div className="text-sm opacity-90">ROI Increase</div>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">PT Industri Maju</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                  Transformasi digital lengkap dari sistem manual ke otomasi penuh dengan IoT integration.
-                </p>
-                <div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
-                  <span>Baca Selengkapnya</span>
-                  <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Case Study 2 */}
-            <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 overflow-hidden">
-              <div className="h-48 bg-gradient-to-br from-green-500 to-emerald-600 relative overflow-hidden">
-                <div className="absolute inset-0 bg-black/20"></div>
-                <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
-                  Retail
-                </div>
-                <div className="absolute bottom-4 left-4 text-white">
-                  <div className="text-2xl font-bold">85%</div>
-                  <div className="text-sm opacity-90">Cost Reduction</div>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Retail Chain ABC</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                  Implementasi sistem POS terintegrasi dengan inventory management dan analytics real-time.
-                </p>
-                <div className="flex items-center text-green-600 dark:text-green-400 text-sm font-medium group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors">
-                  <span>Baca Selengkapnya</span>
-                  <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Case Study 3 */}
-            <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 overflow-hidden">
-              <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-600 relative overflow-hidden">
-                <div className="absolute inset-0 bg-black/20"></div>
-                <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
-                  Healthcare
-                </div>
-                <div className="absolute bottom-4 left-4 text-white">
-                  <div className="text-2xl font-bold">60%</div>
-                  <div className="text-sm opacity-90">Faster Processing</div>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Klinik Sehat Plus</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                  Digitalisasi rekam medis dengan AI-powered diagnosis assistance dan telemedicine platform.
-                </p>
-                <div className="flex items-center text-purple-600 dark:text-purple-400 text-sm font-medium group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
-                  <span>Baca Selengkapnya</span>
-                  <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* View All Button */}
-          <div className="text-center mt-12">
-            <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/25">
-              Lihat Semua Case Studies
-            </button>
-          </div>
-        </div>
-      </section>
-
       {/* Process/How We Work Section */}
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -664,8 +615,12 @@ export default function Home() {
             {/* Team Member 1 */}
             <div className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-2">
               <div className="relative mb-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl font-bold">
-                  JD
+                <div className="w-24 h-24 rounded-2xl mx-auto overflow-hidden">
+                  <img
+                    src="/assets/img/person/person-m-9.webp"
+                    alt="John Doe"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -696,8 +651,12 @@ export default function Home() {
             {/* Team Member 2 */}
             <div className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 hover:-translate-y-2">
               <div className="relative mb-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl font-bold">
-                  SA
+                <div className="w-24 h-24 rounded-2xl mx-auto overflow-hidden">
+                  <img
+                    src="/assets/img/person/person-f-9.webp"
+                    alt="John Doe"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -728,8 +687,12 @@ export default function Home() {
             {/* Team Member 3 */}
             <div className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 hover:-translate-y-2">
               <div className="relative mb-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl font-bold">
-                  MR
+                <div className="w-24 h-24 rounded-2xl mx-auto overflow-hidden">
+                  <img
+                    src="/assets/img/person/person-m-10.webp"
+                    alt="John Doe"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -760,8 +723,12 @@ export default function Home() {
             {/* Team Member 4 */}
             <div className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:-translate-y-2">
               <div className="relative mb-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl font-bold">
-                  AL
+                <div className="w-24 h-24 rounded-2xl mx-auto overflow-hidden">
+                  <img
+                    src="/assets/img/person/person-f-6.webp"
+                    alt="John Doe"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -814,7 +781,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Testimonial */}
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -832,98 +799,100 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Testimonial 1 */}
-            <div className="group relative bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 p-8 rounded-2xl border border-blue-100 dark:border-gray-700 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300">
-              <div className="mb-6">
-                <div className="flex text-yellow-400 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  ))}
-                </div>
-                <blockquote className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                  "KonsulPro berhasil mentransformasi seluruh infrastruktur IT kami. ROI yang didapat melebihi ekspektasi dan tim mereka sangat profesional dalam setiap tahapan project."
-                </blockquote>
-              </div>
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                  BS
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Budi Santoso</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">CEO, PT Teknologi Maju</p>
-                </div>
-              </div>
-            </div>
+          {loading && <p className="text-center text-gray-500 dark:text-gray-400">Memuat testimoni...</p>}
+          {error && <p className="text-center text-red-500 dark:text-red-400">{error}</p>}
 
-            {/* Testimonial 2 */}
-            <div className="group relative bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 p-8 rounded-2xl border border-green-100 dark:border-gray-700 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300">
-              <div className="mb-6">
-                <div className="flex text-yellow-400 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  ))}
+          {!loading && !error && testimonials.length > 0 && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {testimonials.map((testimonial) => (
+                <div
+                  key={testimonial.id}
+                  className="group relative bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 p-8 rounded-2xl border border-blue-100 dark:border-gray-700 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300"
+                >
+                  <div className="mb-6">
+                    <div className="flex text-yellow-400 mb-4">
+                      {[...Array(5)].map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`w-5 h-5 ${i < testimonial.rating ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"
+                            }`}
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                      ))}
+                    </div>
+                    <blockquote className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+                      "{testimonial.review}"
+                    </blockquote>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                      {testimonial.user_profile?.foto_url ? (
+                        <img
+                          src={testimonial.user_profile.foto_url}
+                          alt={testimonial.name}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        testimonial.name.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">{testimonial.name}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {testimonial.user_profile?.pekerjaan || 'Klien'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <blockquote className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                  "Implementasi sistem analytics mereka membantu kami mengoptimalkan operations hingga 40%. Support team yang responsif dan solusi yang scalable."
-                </blockquote>
-              </div>
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                  SR
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Sari Rahma</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Operations Director, Retail Chain ABC</p>
-                </div>
-              </div>
+              ))}
             </div>
-
-            {/* Testimonial 3 */}
-            <div className="group relative bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-900 p-8 rounded-2xl border border-purple-100 dark:border-gray-700 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300">
-              <div className="mb-6">
-                <div className="flex text-yellow-400 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  ))}
-                </div>
-                <blockquote className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                  "Partnership dengan KonsulPro mengubah cara kami menjalankan bisnis. Solusi cybersecurity mereka memberikan peace of mind dan competitive advantage."
-                </blockquote>
-              </div>
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                  DW
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Dr. William Chen</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Medical Director, Klinik Sehat Plus</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
+          {!loading && !error && testimonials.length === 0 && (
+            <p className="text-center text-gray-500 dark:text-gray-400">Belum ada testimoni.</p>
+          )}
 
           {/* Overall Rating */}
-          <div className="text-center mt-16">
-            <div className="inline-flex items-center space-x-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 px-8 py-4 rounded-2xl border border-yellow-200 dark:border-yellow-800">
-              <div className="flex text-yellow-400 text-2xl">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                ))}
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-gray-900 dark:text-white">4.9/5</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">dari 500+ reviews</div>
+          {!loading && stats && (
+            <div className="text-center mt-16">
+              <div className="inline-flex items-center space-x-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 px-8 py-4 rounded-2xl border border-yellow-200 dark:border-yellow-800">
+                <div className="flex text-yellow-400 text-2xl">
+                  {/* Bintang Rating Rata-rata */}
+                  {[...Array(5)].map((_, i) => (
+                    <svg
+                      key={i}
+                      className={`w-8 h-8 ${i < getFullStars(stats.average_rating)
+                        ? "text-yellow-400"
+                        : (i === getFullStars(stats.average_rating) && hasHalfStar(stats.average_rating))
+                          ? "text-yellow-400/50"
+                          : "text-gray-300 dark:text-gray-600"
+                        }`}
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                  ))}
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                    {stats.average_rating}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    dari {stats.total_reviews}+ reviews
+                  </div>
+                </div>
               </div>
             </div>
+          )}
+
+          {/* View All Button */}
+          <div className="text-center mt-12">
+            <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/25" onClick={handleRatingClick}>
+              Beri Rating Anda
+            </button>
           </div>
         </div>
       </section>

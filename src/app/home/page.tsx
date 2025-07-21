@@ -1,21 +1,28 @@
+// pages/index.tsx
 'use client'
 
 import MainTemplateUser from "@/components/MainTemplateUser";
-import Navbar from "@/components/Navabr";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { authService } from "@/lib/api";
+// Import Testimonial dan RatingStats
+import { Testimonial, RatingStats, RatingListResponse } from "@/types/rating";
 
 export default function Home() {
-    const [isVisible, setIsVisible] = useState(false);
-
     const router = useRouter();
+    const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+    const [stats, setStats] = useState<RatingStats | null>(null); // State untuk statistik
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
         setIsVisible(true);
     }, []);
 
-    const stats = [
+
+    const status = [
         { value: "200+", label: "Klien Terlayani", icon: "👥" },
         { value: "98%", label: "Tingkat Kepuasan", icon: "⭐" },
         { value: "24/7", label: "Support Ready", icon: "🚀" },
@@ -45,15 +52,49 @@ export default function Home() {
         if (!token) {
             window.location.href = "/auth/login";
         }
+
+        const fetchTestimonialsAndStats = async () => {
+            try {
+                setLoading(true);
+                // Pastikan Anda memanggil API yang mengembalikan RatingListResponse
+                // dan secara eksplisit tentukan tipenya jika perlu, meskipun TypeScript
+                // seringkali bisa menginferensinya.
+                const response = await authService.getHighRatedTestimonials(); // Ini akan mengembalikan AxiosResponse<RatingListResponse>
+                // Periksa struktur data yang diterima dari API
+                // Jika API mengembalikan data langsung di root, sesuaikan:
+                setTestimonials(response.data.testimonials);
+                setStats(response.data.stats); // Ini seharusnya sudah benar sekarang
+            } catch (err) {
+                console.error("Failed to fetch testimonials and stats:", err);
+                setError("Gagal memuat testimoni dan statistik. Silakan coba lagi nanti.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTestimonialsAndStats();
     }, []);
 
     const handleRatingClick = () => {
         router.push("/rating");
     };
 
+    // Fungsi helper untuk mendapatkan jumlah bintang penuh dari rata-rata rating
+    const getFullStars = (averageRating: string | undefined) => {
+        if (!averageRating) return 0;
+        const [ratingValue] = averageRating.split('/');
+        return Math.floor(parseFloat(ratingValue));
+    };
+
+    // Fungsi helper untuk memeriksa apakah ada bintang setengah
+    const hasHalfStar = (averageRating: string | undefined) => {
+        if (!averageRating) return false;
+        const [ratingValue] = averageRating.split('/');
+        return parseFloat(ratingValue) % 1 !== 0; // Jika ada desimal
+    };
+
     return (
         <MainTemplateUser>
-
             {/* Hero Section */}
             <section className="relative pt-20 lg:pt-28 pb-20 overflow-hidden">
                 {/* Background Effects */}
@@ -108,7 +149,7 @@ export default function Home() {
 
                             {/* Stats */}
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                                {stats.map((stat, index) => (
+                                {status.map((stat, index) => (
                                     <div
                                         key={index}
                                         className={`text-center transform transition-all duration-700 delay-${index * 100} ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
@@ -738,7 +779,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Testimonials Section */}
+            {/* Testimonial */}
             <section className="py-20 bg-white dark:bg-gray-900">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
@@ -756,99 +797,94 @@ export default function Home() {
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {/* Testimonial 1 */}
-                        <div className="group relative bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 p-8 rounded-2xl border border-blue-100 dark:border-gray-700 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300">
-                            <div className="mb-6">
-                                <div className="flex text-yellow-400 mb-4">
-                                    {[...Array(5)].map((_, i) => (
-                                        <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                        </svg>
-                                    ))}
-                                </div>
-                                <blockquote className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                                    "KonsulPro berhasil mentransformasi seluruh infrastruktur IT kami. ROI yang didapat melebihi ekspektasi dan tim mereka sangat profesional dalam setiap tahapan project."
-                                </blockquote>
-                            </div>
-                            <div className="flex items-center">
-                                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                                    BS
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold text-gray-900 dark:text-white">Budi Santoso</h4>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">CEO, PT Teknologi Maju</p>
-                                </div>
-                            </div>
-                        </div>
+                    {loading && <p className="text-center text-gray-500 dark:text-gray-400">Memuat testimoni...</p>}
+                    {error && <p className="text-center text-red-500 dark:text-red-400">{error}</p>}
 
-                        {/* Testimonial 2 */}
-                        <div className="group relative bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 p-8 rounded-2xl border border-green-100 dark:border-gray-700 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300">
-                            <div className="mb-6">
-                                <div className="flex text-yellow-400 mb-4">
-                                    {[...Array(5)].map((_, i) => (
-                                        <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                        </svg>
-                                    ))}
+                    {!loading && !error && testimonials.length > 0 && (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {testimonials.map((testimonial) => (
+                                <div
+                                    key={testimonial.id}
+                                    className="group relative bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 p-8 rounded-2xl border border-blue-100 dark:border-gray-700 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300"
+                                >
+                                    <div className="mb-6">
+                                        <div className="flex text-yellow-400 mb-4">
+                                            {[...Array(5)].map((_, i) => (
+                                                <svg
+                                                    key={i}
+                                                    className={`w-5 h-5 ${i < testimonial.rating ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"
+                                                        }`}
+                                                    fill="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                                </svg>
+                                            ))}
+                                        </div>
+                                        <blockquote className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+                                            "{testimonial.review}"
+                                        </blockquote>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                                            {testimonial.user_profile?.foto_url ? (
+                                                <img
+                                                    src={testimonial.user_profile.foto_url}
+                                                    alt={testimonial.name}
+                                                    className="w-full h-full object-cover rounded-full"
+                                                />
+                                            ) : (
+                                                testimonial.name.charAt(0).toUpperCase()
+                                            )}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900 dark:text-white">{testimonial.name}</h4>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                {testimonial.user_profile?.pekerjaan || 'Klien'}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <blockquote className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                                    "Implementasi sistem analytics mereka membantu kami mengoptimalkan operations hingga 40%. Support team yang responsif dan solusi yang scalable."
-                                </blockquote>
-                            </div>
-                            <div className="flex items-center">
-                                <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                                    SR
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold text-gray-900 dark:text-white">Sari Rahma</h4>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">Operations Director, Retail Chain ABC</p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
-
-                        {/* Testimonial 3 */}
-                        <div className="group relative bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-900 p-8 rounded-2xl border border-purple-100 dark:border-gray-700 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300">
-                            <div className="mb-6">
-                                <div className="flex text-yellow-400 mb-4">
-                                    {[...Array(5)].map((_, i) => (
-                                        <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                        </svg>
-                                    ))}
-                                </div>
-                                <blockquote className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                                    "Partnership dengan KonsulPro mengubah cara kami menjalankan bisnis. Solusi cybersecurity mereka memberikan peace of mind dan competitive advantage."
-                                </blockquote>
-                            </div>
-                            <div className="flex items-center">
-                                <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                                    DW
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold text-gray-900 dark:text-white">Dr. William Chen</h4>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">Medical Director, Klinik Sehat Plus</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    )}
+                    {!loading && !error && testimonials.length === 0 && (
+                        <p className="text-center text-gray-500 dark:text-gray-400">Belum ada testimoni.</p>
+                    )}
 
                     {/* Overall Rating */}
-                    <div className="text-center mt-16">
-                        <div className="inline-flex items-center space-x-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 px-8 py-4 rounded-2xl border border-yellow-200 dark:border-yellow-800">
-                            <div className="flex text-yellow-400 text-2xl">
-                                {[...Array(5)].map((_, i) => (
-                                    <svg key={i} className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                    </svg>
-                                ))}
-                            </div>
-                            <div>
-                                <div className="text-3xl font-bold text-gray-900 dark:text-white">4.9/5</div>
-                                <div className="text-sm text-gray-600 dark:text-gray-400">dari 500+ reviews</div>
+                    {!loading && stats && (
+                        <div className="text-center mt-16">
+                            <div className="inline-flex items-center space-x-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 px-8 py-4 rounded-2xl border border-yellow-200 dark:border-yellow-800">
+                                <div className="flex text-yellow-400 text-2xl">
+                                    {/* Bintang Rating Rata-rata */}
+                                    {[...Array(5)].map((_, i) => (
+                                        <svg
+                                            key={i}
+                                            className={`w-8 h-8 ${i < getFullStars(stats.average_rating)
+                                                ? "text-yellow-400"
+                                                : (i === getFullStars(stats.average_rating) && hasHalfStar(stats.average_rating))
+                                                    ? "text-yellow-400/50"
+                                                    : "text-gray-300 dark:text-gray-600"
+                                                }`}
+                                            fill="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                        </svg>
+                                    ))}
+                                </div>
+                                <div>
+                                    <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                                        {stats.average_rating}
+                                    </div>
+                                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                                        dari {stats.total_reviews}+ reviews
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* View All Button */}
                     <div className="text-center mt-12">
@@ -858,7 +894,6 @@ export default function Home() {
                     </div>
                 </div>
             </section>
-
         </MainTemplateUser>
     );
 }

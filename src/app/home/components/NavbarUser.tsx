@@ -95,7 +95,13 @@ const NavbarUser = () => {
                     {/* Desktop Navigation */}
                     <div className="hidden lg:flex items-center space-x-1">
                         {navItems.map((item, index) => {
-                            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                            // Modifikasi logika isActive di sini
+                            let isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+
+                            // Jika item adalah 'Beranda' dan pathname adalah '/rating', jadikan aktif
+                            if (item.name === 'Beranda' && pathname === '/rating') {
+                                isActive = true;
+                            }
 
                             return (
                                 <a
@@ -171,7 +177,13 @@ const NavbarUser = () => {
                     }`}>
                     <div className="pt-4 space-y-2">
                         {navItems.map((item, index) => {
-                            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                            // Modifikasi logika isActive di sini (untuk mobile juga)
+                            let isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+
+                            // Jika item adalah 'Beranda' dan pathname adalah '/rating', jadikan aktif
+                            if (item.name === 'Beranda' && pathname === '/rating') {
+                                isActive = true;
+                            }
 
                             return (
                                 <a

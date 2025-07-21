@@ -1,4 +1,3 @@
-// src/lib/api.ts
 import {
     RegisterFormData,
     LoginFormData,
@@ -18,6 +17,11 @@ import {
     SaveConsultationPayload,
     ConsultationSaveResponse,
 } from '@/types/consultation-form';
+import {
+    RatingListResponse,
+    SubmitRatingPayload,
+    SubmitRatingResponse,
+} from '@/types/rating';
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -96,11 +100,14 @@ export const authService = {
         api.get<ArtikelDetailResponse>(`/artikels/${id}`),
 
     // konsultasi
-    // New: Get Midtrans Snap Token
     getSnapToken: (data: ConsultationFormData) =>
         api.post<PaymentTokenResponse>('/payment-token', data),
-
-    // New: Save Consultation after payment status
     saveConsultation: (data: SaveConsultationPayload) =>
         api.post<ConsultationSaveResponse>('/consultation/save', data),
+
+    // Rating
+    submitRating: (data: SubmitRatingPayload) =>
+        api.post<SubmitRatingResponse>('/ratings', data),
+    getRatingsAndStats: () =>
+        api.get<RatingListResponse>('/ratings'),
 };

@@ -3,10 +3,13 @@
 import MainTemplateUser from "@/components/MainTemplateUser";
 import Navbar from "@/components/Navabr";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export default function Home() {
     const [isVisible, setIsVisible] = useState(false);
+
+    const router = useRouter();
 
     useEffect(() => {
         setIsVisible(true);
@@ -43,6 +46,10 @@ export default function Home() {
             window.location.href = "/auth/login";
         }
     }, []);
+
+    const handleRatingClick = () => {
+        router.push("/rating");
+    };
 
     return (
         <MainTemplateUser>
@@ -420,110 +427,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Client Success Stories / Case Studies */}
-            <section className="py-20 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-16">
-                        <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-300 px-4 py-2 rounded-full text-sm font-medium mb-6">
-                            <span>Success Stories</span>
-                        </div>
-                        <h2 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-4">
-                            Kesuksesan Klien adalah Prioritas Kami
-                        </h2>
-                        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-                            Lihat bagaimana kami membantu berbagai perusahaan mencapai target bisnis mereka
-                        </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {/* Case Study 1 */}
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
-                            <div className="h-48 bg-gradient-to-br from-blue-500 to-indigo-600 relative overflow-hidden">
-                                <div className="absolute inset-0 bg-black/20"></div>
-                                <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
-                                    Manufacturing
-                                </div>
-                                <div className="absolute bottom-4 left-4 text-white">
-                                    <div className="text-2xl font-bold">320%</div>
-                                    <div className="text-sm opacity-90">ROI Increase</div>
-                                </div>
-                            </div>
-                            <div className="p-6">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">PT Industri Maju</h3>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                                    Transformasi digital lengkap dari sistem manual ke otomasi penuh dengan IoT integration.
-                                </p>
-                                <div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
-                                    <span>Baca Selengkapnya</span>
-                                    <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Case Study 2 */}
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 overflow-hidden">
-                            <div className="h-48 bg-gradient-to-br from-green-500 to-emerald-600 relative overflow-hidden">
-                                <div className="absolute inset-0 bg-black/20"></div>
-                                <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
-                                    Retail
-                                </div>
-                                <div className="absolute bottom-4 left-4 text-white">
-                                    <div className="text-2xl font-bold">85%</div>
-                                    <div className="text-sm opacity-90">Cost Reduction</div>
-                                </div>
-                            </div>
-                            <div className="p-6">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Retail Chain ABC</h3>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                                    Implementasi sistem POS terintegrasi dengan inventory management dan analytics real-time.
-                                </p>
-                                <div className="flex items-center text-green-600 dark:text-green-400 text-sm font-medium group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors">
-                                    <span>Baca Selengkapnya</span>
-                                    <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Case Study 3 */}
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 overflow-hidden">
-                            <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-600 relative overflow-hidden">
-                                <div className="absolute inset-0 bg-black/20"></div>
-                                <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
-                                    Healthcare
-                                </div>
-                                <div className="absolute bottom-4 left-4 text-white">
-                                    <div className="text-2xl font-bold">60%</div>
-                                    <div className="text-sm opacity-90">Faster Processing</div>
-                                </div>
-                            </div>
-                            <div className="p-6">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Klinik Sehat Plus</h3>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                                    Digitalisasi rekam medis dengan AI-powered diagnosis assistance dan telemedicine platform.
-                                </p>
-                                <div className="flex items-center text-purple-600 dark:text-purple-400 text-sm font-medium group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
-                                    <span>Baca Selengkapnya</span>
-                                    <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* View All Button */}
-                    <div className="text-center mt-12">
-                        <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/25">
-                            Lihat Semua Case Studies
-                        </button>
-                    </div>
-                </div>
-            </section>
-
             {/* Process/How We Work Section */}
             <section className="py-20 bg-white dark:bg-gray-900">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -669,8 +572,12 @@ export default function Home() {
                         {/* Team Member 1 */}
                         <div className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-2">
                             <div className="relative mb-6">
-                                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl font-bold">
-                                    JD
+                                <div className="w-24 h-24 rounded-2xl mx-auto overflow-hidden">
+                                    <img
+                                        src="/assets/img/person/person-m-9.webp"
+                                        alt="John Doe"
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
                                 <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -701,8 +608,12 @@ export default function Home() {
                         {/* Team Member 2 */}
                         <div className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 hover:-translate-y-2">
                             <div className="relative mb-6">
-                                <div className="w-24 h-24 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl font-bold">
-                                    SA
+                                <div className="w-24 h-24 rounded-2xl mx-auto overflow-hidden">
+                                    <img
+                                        src="/assets/img/person/person-f-9.webp"
+                                        alt="John Doe"
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
                                 <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -733,8 +644,12 @@ export default function Home() {
                         {/* Team Member 3 */}
                         <div className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 hover:-translate-y-2">
                             <div className="relative mb-6">
-                                <div className="w-24 h-24 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl font-bold">
-                                    MR
+                                <div className="w-24 h-24 rounded-2xl mx-auto overflow-hidden">
+                                    <img
+                                        src="/assets/img/person/person-m-10.webp"
+                                        alt="John Doe"
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
                                 <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -765,8 +680,12 @@ export default function Home() {
                         {/* Team Member 4 */}
                         <div className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:-translate-y-2">
                             <div className="relative mb-6">
-                                <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl font-bold">
-                                    AL
+                                <div className="w-24 h-24 rounded-2xl mx-auto overflow-hidden">
+                                    <img
+                                        src="/assets/img/person/person-f-6.webp"
+                                        alt="John Doe"
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
                                 <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -929,6 +848,13 @@ export default function Home() {
                                 <div className="text-sm text-gray-600 dark:text-gray-400">dari 500+ reviews</div>
                             </div>
                         </div>
+                    </div>
+
+                    {/* View All Button */}
+                    <div className="text-center mt-12">
+                        <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/25" onClick={handleRatingClick}>
+                            Beri Rating Anda
+                        </button>
                     </div>
                 </div>
             </section>

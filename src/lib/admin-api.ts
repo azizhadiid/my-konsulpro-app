@@ -1,0 +1,61 @@
+// src/lib/admin-api.ts
+
+import axios from 'axios';
+import { DashboardApiResponse } from '@/types/admin-dashboard'; // Import tipe yang baru dibuat
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+if (!API_URL) {
+    console.error('NEXT_PUBLIC_API_URL is not defined in your environment variables.');
+}
+
+const adminApi = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+// Request Interceptor to add Authorization token
+adminApi.interceptors.request.use(
+    (config) => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// Response Interceptor to handle common errors like 401/403
+adminApi.interceptors.response.use(
+    (response) => {
+        return response;
+    },
+    (error) => {
+        if (axios.isAxiosError(error) && error.response) {
+            if (error.response.status === 401 || error.response.status === 403) {
+                // Redirect to login if unauthorized or forbidden
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('token');
+                    window.location.href = "/auth/login"; // Or a more specific admin login page
+                }
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
+export const adminService = {
+    /**
+     * Fetches all dashboard data for the admin panel.
+     * @returns Promise<DashboardApiResponse>
+     */
+    getAdminDashboardData: () => adminApi.get<DashboardApiResponse>('/dashboard'),
+
+    // Removed generateReport method as it will be called directly via window.open
+    // generateReport: () => adminApi.get<GenerateReportResponse>('/dashboard/generate-report'),
+};

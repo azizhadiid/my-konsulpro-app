@@ -2,37 +2,13 @@
 
 import MainTemplateAdmin from "../components/MainTemplateAdmin";
 import { useEffect, useState, useCallback, JSX } from "react";
-import axios from "axios";
 import Link from "next/link";
-import { MessageCircle, Clock, CheckCircle, XCircle, DollarSign, BookOpen, FileText, BarChart, TrendingUp, TrendingDown, Users } from "lucide-react"; // Import ikon tambahan
+import { MessageCircle, Clock, CheckCircle, XCircle, DollarSign, BookOpen, FileText, Users, LayoutDashboard } from "lucide-react";
 
-// --- Interfaces ---
-interface DashboardStats {
-    total_consultations: number;
-    pending_consultations: number;
-    paid_consultations: number;
-    completed_consultations: number;
-    cancelled_consultations: number;
-    total_articles: number;
-    draft_articles: number;
-    published_articles: number;
-    // Tambahkan metrik lain jika ada (misal: total user, pendapatan)
-}
-
-interface LatestConsultation {
-    id: number;
-    user_name: string;
-    topik: string;
-    status: 'pending' | 'paid' | 'completed' | 'cancelled';
-    created_at_formatted: string;
-}
-
-interface LatestArticle {
-    id: number;
-    title: string;
-    status: string; // 'draft' | 'published'
-    created_at_formatted: string;
-}
+// Import tipe dari file baru
+import { DashboardStats, LatestConsultation, LatestArticle, DashboardApiResponse } from '@/types/admin-dashboard';
+// Import service API baru
+import { adminService } from '@/lib/admin-api';
 
 const DashboardPage = () => {
     const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -40,35 +16,34 @@ const DashboardPage = () => {
     const [latestArticles, setLatestArticles] = useState<LatestArticle[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
+    // Initial auth check (can be combined with data fetching or kept separate)
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token) {
             window.location.href = "/auth/login";
         }
-        // TODO: Anda mungkin ingin memverifikasi role admin dari token di sini juga
-        // const userRole = decodeToken(token).role;
-        // if (userRole !== 'admin') { window.location.href = '/unauthorized'; }
+        // TODO: Implement actual role verification here (e.g., decode token and check role)
+        // For example:
+        // const decodedToken = decodeToken(token);
+        // if (decodedToken?.role !== 'admin') {
+        //     window.location.href = '/unauthorized'; // Or redirect to a general user dashboard
+        // }
     }, []);
 
-    // --- Fetch Data Dashboard dari API ---
+    // --- Fetch Dashboard Data from API using adminService ---
     const fetchDashboardData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
             const token = localStorage.getItem("token");
             if (!token) {
-                // Ini akan diarahkan oleh useEffect di atas, tapi untuk keamanan di sini juga
                 window.location.href = "/auth/login";
                 return;
             }
 
-            // Endpoint API baru untuk dashboard admin
-            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/dashboard`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const response = await adminService.getAdminDashboardData(); // Menggunakan adminService
 
             if (response.data.success) {
                 setStats(response.data.stats);
@@ -77,15 +52,10 @@ const DashboardPage = () => {
             } else {
                 setError(response.data.message || "Gagal mengambil data dashboard.");
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error fetching dashboard data:", err);
-            if (axios.isAxiosError(err) && err.response) {
-                if (err.response.status === 401 || err.response.status === 403) {
-                    localStorage.removeItem("token");
-                    window.location.href = "/auth/login";
-                } else {
-                    setError(err.response.data.message || "Terjadi kesalahan saat mengambil data.");
-                }
+            if (err.response?.data?.message) {
+                setError(err.response.data.message);
             } else {
                 setError("Terjadi kesalahan jaringan atau server.");
             }
@@ -98,6 +68,33 @@ const DashboardPage = () => {
         fetchDashboardData();
     }, [fetchDashboardData]);
 
+    // Function to handle report generation
+    const handleGenerateReport = async () => {
+        setIsGeneratingReport(true);
+        try {
+            // Simulate a short delay for "generating"
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Construct the direct URL to the report endpoint
+            const reportUrl = `${process.env.NEXT_PUBLIC_API_URL}/dashboard/generate-report`;
+
+            // Open the URL in a new blank tab
+            // The Laravel backend will directly send the file for download.
+            window.open(reportUrl, '_blank');
+
+            // Optionally, show a success message after opening the tab
+            // (Consider using a custom modal/toast instead of alert in production)
+            alert("Laporan sedang dibuat dan akan diunduh di tab baru!");
+
+        } catch (err) {
+            console.error("Error initiating report download:", err);
+            alert("Gagal memulai unduhan laporan. Silakan coba lagi.");
+        } finally {
+            setIsGeneratingReport(false);
+        }
+    };
+
+    // Helper function to render status badges
     const getStatusBadge = (status: string) => {
         const statusConfig: { [key: string]: { bg: string; text: string; label: string; icon?: JSX.Element } } = {
             completed: { bg: "bg-green-100", text: "text-green-800", label: "Selesai", icon: <CheckCircle className="w-3 h-3 mr-1" /> },
@@ -150,15 +147,29 @@ const DashboardPage = () => {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                                Welcome back, Admin
+                                Welcome back, Admin!
                             </h1>
                             <p className="text-gray-600">
                                 Here's what's happening with your business today.
                             </p>
                         </div>
                         <div className="mt-4 md:mt-0">
-                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105">
-                                Generate Report
+                            <button
+                                onClick={handleGenerateReport}
+                                disabled={isGeneratingReport}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isGeneratingReport ? (
+                                    <span className="flex items-center">
+                                        <svg className="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Generating...
+                                    </span>
+                                ) : (
+                                    "Generate Report"
+                                )}
                             </button>
                         </div>
                     </div>
@@ -167,6 +178,7 @@ const DashboardPage = () => {
                 {/* Statistics Cards */}
                 <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Ringkasan Statistik</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {/* Total Konsultasi */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600">Total Konsultasi</p>
@@ -176,6 +188,7 @@ const DashboardPage = () => {
                             <MessageCircle className="w-6 h-6 text-blue-600" />
                         </div>
                     </div>
+                    {/* Konsultasi Pending */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600">Konsultasi Pending</p>
@@ -185,6 +198,7 @@ const DashboardPage = () => {
                             <Clock className="w-6 h-6 text-yellow-600" />
                         </div>
                     </div>
+                    {/* Konsultasi Dibayar */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600">Konsultasi Dibayar</p>
@@ -194,6 +208,7 @@ const DashboardPage = () => {
                             <DollarSign className="w-6 h-6 text-blue-600" />
                         </div>
                     </div>
+                    {/* Konsultasi Selesai */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600">Konsultasi Selesai</p>
@@ -203,6 +218,7 @@ const DashboardPage = () => {
                             <CheckCircle className="w-6 h-6 text-green-600" />
                         </div>
                     </div>
+                    {/* Konsultasi Dibatalkan */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600">Konsultasi Dibatalkan</p>
@@ -212,6 +228,7 @@ const DashboardPage = () => {
                             <XCircle className="w-6 h-6 text-red-600" />
                         </div>
                     </div>
+                    {/* Total Artikel */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600">Total Artikel</p>
@@ -221,6 +238,7 @@ const DashboardPage = () => {
                             <BookOpen className="w-6 h-6 text-purple-600" />
                         </div>
                     </div>
+                    {/* Artikel Draft */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600">Artikel Draft</p>
@@ -230,6 +248,7 @@ const DashboardPage = () => {
                             <FileText className="w-6 h-6 text-gray-600" />
                         </div>
                     </div>
+                    {/* Artikel Published */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600">Artikel Published</p>
@@ -237,6 +256,16 @@ const DashboardPage = () => {
                         </div>
                         <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                             <BookOpen className="w-6 h-6 text-purple-600" />
+                        </div>
+                    </div>
+                    {/* Total Users Card */}
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-gray-600">Total Pengguna</p>
+                            <p className="text-2xl font-bold text-indigo-600">{stats?.total_users}</p>
+                        </div>
+                        <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <Users className="w-6 h-6 text-indigo-600" />
                         </div>
                     </div>
                 </div>
@@ -297,23 +326,6 @@ const DashboardPage = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Optional: Quick Actions / Charts */}
-                {/* <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Quick Actions</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    <Link href="/admin/tambah-artikel" className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-center space-x-4 hover:shadow-md transition-shadow">
-                        <FileText className="w-8 h-8 text-indigo-600" />
-                        <span className="font-semibold text-lg text-gray-800">Tambah Artikel Baru</span>
-                    </Link>
-                    <Link href="/admin/verifikasi" className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-center space-x-4 hover:shadow-md transition-shadow">
-                        <Clock className="w-8 h-8 text-yellow-600" />
-                        <span className="font-semibold text-lg text-gray-800">Verifikasi Konsultasi</span>
-                    </Link>
-                    <Link href="/admin/users" className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-center space-x-4 hover:shadow-md transition-shadow">
-                        <Users className="w-8 h-8 text-green-600" />
-                        <span className="font-semibold text-lg text-gray-800">Kelola Pengguna</span>
-                    </Link>
-                </div> */}
 
             </div>
         </MainTemplateAdmin>

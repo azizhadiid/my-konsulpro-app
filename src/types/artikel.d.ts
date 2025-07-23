@@ -9,6 +9,10 @@ export interface Artikel {
     foto_url: string | null; // URL lengkap foto
     created_at: string;
     updated_at: string;
+    user?: { // Jika Anda eager load user di backend (penulis artikel)
+        id: number;
+        name: string;
+    };
 }
 
 // Definisi untuk respons API daftar artikel (paginated)
@@ -30,9 +34,25 @@ export interface ArtikelListResponse {
     prev_page_url: string | null;
     to: number;
     total: number;
+    message: string;
+    artikels: Artikel[];
 }
 
 // Definisi untuk respons API detail artikel
 export interface ArtikelDetailResponse {
+    message: string;
     artikel: Artikel; // Backend mengembalikan dalam objek 'artikel'
+}
+
+export interface CreateArtikelPayload {
+    judul: string;
+    deskripsi: string;
+    kategori: string;
+    tanggal_publish: string;
+    foto?: File | null; // File object for upload
+}
+
+export interface CreateArtikelApiResponse {
+    message: string;
+    artikel: Artikel;
 }

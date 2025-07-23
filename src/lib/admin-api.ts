@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import { DashboardApiResponse } from '@/types/admin-dashboard'; // Import tipe yang baru dibuat
+import { CreateArtikelApiResponse, CreateArtikelPayload } from '@/types/artikel';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -50,12 +51,15 @@ adminApi.interceptors.response.use(
 );
 
 export const adminService = {
-    /**
-     * Fetches all dashboard data for the admin panel.
-     * @returns Promise<DashboardApiResponse>
-     */
+    // Untuk Dashboard
     getAdminDashboardData: () => adminApi.get<DashboardApiResponse>('/dashboard'),
-
-    // Removed generateReport method as it will be called directly via window.open
     // generateReport: () => adminApi.get<GenerateReportResponse>('/dashboard/generate-report'),
+
+    // Untuk Artikel
+    createArtikel: (data: FormData) =>
+        adminApi.post<CreateArtikelApiResponse>('/artikels', data, {
+            headers: {
+                'Content-Type': 'multipart/form-data', // Penting untuk upload file
+            },
+        }),
 };

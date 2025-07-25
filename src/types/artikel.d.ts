@@ -56,3 +56,8 @@ export interface CreateArtikelApiResponse {
     message: string;
     artikel: Artikel;
 }
+
+export interface ApiResponse {
+    message: string;
+    success?: boolean; // Opsional, tergantung backend Anda
+}

@@ -61,3 +61,14 @@ export interface ApiResponse {
     message: string;
     success?: boolean; // Opsional, tergantung backend Anda
 }
+
+export interface UpdateArtikelPayload {
+    judul: string;
+    deskripsi: string;
+    kategori: string;
+    tanggal_publish: string;
+    foto?: File | null; // New file to upload, or null if no new file
+    _method: 'PUT'; // For Laravel method spoofing
+    // Tambahkan properti ini jika Anda ingin sinyal eksplisit untuk menghapus gambar
+    // is_foto_removed?: boolean;
+}

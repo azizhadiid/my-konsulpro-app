@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import { DashboardApiResponse } from '@/types/admin-dashboard'; // Import tipe yang baru dibuat
-import { CreateArtikelApiResponse, CreateArtikelPayload, ArtikelListResponse, ApiResponse } from '@/types/artikel';
+import { CreateArtikelApiResponse, CreateArtikelPayload, ArtikelListResponse, ApiResponse, ArtikelDetailResponse } from '@/types/artikel';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -65,6 +65,13 @@ export const adminService = {
     getArtikels: (page: number = 1, per_page: number = 10, search: string = '') =>
         adminApi.get<ArtikelListResponse>('/artikels', {
             params: { page, per_page, search },
+        }),
+    getArtikelById: (id: string) => adminApi.get<ArtikelDetailResponse>(`/artikels/${id}`),
+    updateArtikel: (id: string, data: FormData) =>
+        adminApi.post<ApiResponse>(`/artikels/${id}`, data, { // Menggunakan POST dengan _method=PUT
+            headers: {
+                'Content-Type': 'multipart/form-data', // Penting untuk upload file
+            },
         }),
     deleteArtikel: (id: number) => adminApi.delete<ApiResponse>(`/artikels/${id}`),
 };

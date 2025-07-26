@@ -29,3 +29,40 @@ export interface ConsultationHistoryResponse {
     message: string;
     user_info?: UserData;
 }
+
+export interface AdminConsultationStats {
+    total: number;
+    pending: number;
+    paid: number;
+    completed: number;
+    cancelled: number;
+}
+
+export interface ConsultationListResponse {
+    success: boolean;
+    message: string;
+    data: ConsultationItem[];
+    stats: AdminConsultationStats; // Statistik juga disertakan dalam respons daftar
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+    links: { url: string | null; label: string; active: boolean; }[];
+}
+
+export interface UpdateConsultationStatusPayload {
+    status: 'pending' | 'paid' | 'completed' | 'cancelled';
+}
+
+export interface UpdateConsultationStatusResponse {
+    success: boolean;
+    message: string;
+    consultation?: ConsultationItem; // Opsional, jika backend mengembalikan item yang diperbarui
+}
+
+export interface ApiResponse {
+    success: boolean;
+    message: string;
+}

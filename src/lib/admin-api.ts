@@ -3,6 +3,7 @@
 import axios from 'axios';
 import { DashboardApiResponse } from '@/types/admin-dashboard'; // Import tipe yang baru dibuat
 import { CreateArtikelApiResponse, CreateArtikelPayload, ArtikelListResponse, ApiResponse, ArtikelDetailResponse } from '@/types/artikel';
+import { ConsultationListResponse, UpdateConsultationStatusPayload, UpdateConsultationStatusResponse, AdminConsultationStats, ConsultationItem } from '@/types/consultation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -74,4 +75,12 @@ export const adminService = {
             },
         }),
     deleteArtikel: (id: number) => adminApi.delete<ApiResponse>(`/artikels/${id}`),
+
+    // Verifikasi Konsultasi
+    getAdminConsultations: (page: number = 1, per_page: number = 10, search: string = '', status: string = 'all') =>
+        adminApi.get<ConsultationListResponse>('/consultation/verifikasi', {
+            params: { page, per_page, search, status },
+        }),
+    updateConsultationStatus: (id: number, status: UpdateConsultationStatusPayload['status']) =>
+        adminApi.put<UpdateConsultationStatusResponse>(`/consultations/${id}/status`, { status }),
 };

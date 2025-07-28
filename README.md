@@ -49,7 +49,7 @@ Frontend (Next.js):
 ## 🛠️ Instalasi
 ### 1. Clone Repository
 ```bash
-git clone <URL_REPOSITORI_ANDA>
+git clone (https://github.com/azizhadiid/my-konsulpro-app.git)
 cd konsulpro-project # Atau nama folder proyek Anda
 ```
 

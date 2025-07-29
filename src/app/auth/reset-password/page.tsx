@@ -1,14 +1,15 @@
-'use client';
+'use client'
 
-import React from 'react';
+import React, { Suspense } from 'react'; // Import Suspense
 import { useSearchParams } from 'next/navigation';
 import AuthCard from '@/components/ui/AuthCard';
 import AnimatedBackground from '@/components/ui/AnimatedBackground';
 import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
 import Link from 'next/link';
-// ToastContainer sudah di RootLayout
 
-const ResetPasswordPage = () => {
+// Komponen Pembantu untuk logika halaman Reset Password
+// Ini akan dibungkus oleh Suspense
+const ResetPasswordContent = () => {
     const searchParams = useSearchParams();
 
     // Ambil token dan email dari URL parameters
@@ -52,8 +53,21 @@ const ResetPasswordPage = () => {
                     © {new Date().getFullYear()} KonsulPro. Transforming Business Through Technology.
                 </p>
             </div>
-            {/* ToastContainer sudah di RootLayout */}
         </main>
+    );
+};
+
+// Komponen utama halaman Reset Password
+const ResetPasswordPage = () => {
+    return (
+        // Bungkus ResetPasswordContent dengan Suspense
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
+                Memuat...
+            </div>
+        }>
+            <ResetPasswordContent />
+        </Suspense>
     );
 };
 
